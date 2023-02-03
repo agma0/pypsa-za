@@ -39,4 +39,6 @@ def add_carbontax_contraints(n):
 # climate goals 2030 - 400 MtCO2e ? -> change CO2 limit in config.yaml line 69
 # end load shedding? changes in loadshedding (2030) if revenues are invested in RE?
 
+# add new data SACAD/SAPAD? 2022?
+
 # where to provide free solar geysers? -> from household data!
