@@ -1,0 +1,16 @@
+# Snakemake internals
+.snakemake*
+__pycache__
+
+# Directory structure
+networks/*
+resources/*
+results/*
+cutouts/*
+docs/build/*
+benchmarks/*
+logs/*
+
+data/bundle/*
+notebooks/network_playground.ipynb
+~$model_file.xlsx
