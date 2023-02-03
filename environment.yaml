@@ -36,3 +36,7 @@ dependencies:
     - pypsa>=0.13
     - vresutils>=0.2.4
     - countrycode
+    - atlite #agatha
+    - rioxarray #agatha
+    - tsam #agatha
+    - cartopy #agatha - not working

@@ -14,8 +14,8 @@ from pypsa.linopf import (
 
 # carrier types from model_file
 # generator: coal, gas, nuclear, onwind, hydro, hydro-import, solar, CSP, biomass
-# storage unit: PHS
-# ccgt, ocgt, battery
+# storage unit: PHS, battery
+# ccgt, ocgt
 
 # ZAR 1,4 billion in 2021 with ZAR 122/tCO2e -> hochskalieren! Prognose 2030?
 max_add_carbon_investment = 1400000000
