@@ -40,3 +40,5 @@ dependencies:
     - rioxarray #agatha
     - tsam #agatha
     - cartopy #agatha - not working
+    - openpyxl # lisa
+    - powerplantmatching # lisa
