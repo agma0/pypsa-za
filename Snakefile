@@ -15,10 +15,10 @@ wildcard_constraints:
 rule solve_all_networks:
     input:
         expand(
-            "results/networks/"+"elec_{model_file}_{regions}_{resarea}_l{ll}_{opts}.nc",
+            "results/networks/solved_{model_file}_{regions}_{resarea}_l{ll}_{opts}.nc",
             **config["scenario"]
         ),
-        
+
 if config["enable"]["build_natura_raster"]:
     rule build_natura_raster:
         input:
@@ -59,7 +59,7 @@ if not config['hydro_inflow']['disable']:
         resources: mem_mb=1000
         script: "scripts/build_inflow_per_country.py"
 
-if config['enable']['build_topology']: 
+if config['enable']['build_topology']:
     rule build_topology:
         input:
             supply_regions='data/bundle/rsa_supply_regions.gpkg',
@@ -83,7 +83,7 @@ rule base_network:
     resources: mem_mb=1000
     script: "scripts/base_network.py"
 
-if config['enable']['build_renewable_profiles'] & ~config['enable']['use_eskom_wind_solar']: 
+if config['enable']['build_renewable_profiles'] & ~config['enable']['use_eskom_wind_solar']:
     rule build_renewable_profiles:
         input:
             regions = 'resources/buses_{regions}.geojson',#'resources/onshore_shapes_{regions}.geojson',
@@ -98,7 +98,7 @@ if config['enable']['build_renewable_profiles'] & ~config['enable']['use_eskom_w
             salandcover = 'data/bundle/SALandCover_OriginalUTM35North_2013_GTI_72Classes/sa_lcov_2013-14_gti_utm35n_vs22b.tif'
         output:
             profile="resources/profile_{technology}_{regions}_{resarea}.nc",
-            
+
         log:
             "logs/build_renewable_profile_{technology}_{regions}_{resarea}.log",
         benchmark:
@@ -112,7 +112,7 @@ if config['enable']['build_renewable_profiles'] & ~config['enable']['use_eskom_w
             "scripts/build_renewable_profiles.py"
 
 if ~config['enable']['use_eskom_wind_solar']:
-    renewable_carriers = config["renewable"] 
+    renewable_carriers = config["renewable"]
 else:
     renewable_carriers=[]
 
@@ -148,7 +148,7 @@ rule prepare_network:
         "scripts/prepare_network.py"
 
 rule solve_network:
-    input: 
+    input:
         network="networks/pre_{model_file}_{regions}_{resarea}_l{ll}_{opts}.nc",
         model_file="model_file.xlsx",
     output: "results/networks/solved_{model_file}_{regions}_{resarea}_l{ll}_{opts}.nc"

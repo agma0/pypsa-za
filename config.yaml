@@ -19,14 +19,14 @@ logging:
 # When running the model for the first time it is necessary to enable the following scripts:
 # build_natura_raster, build_population, build_topology, build_cutout. For subsequent model
 # runs these scripts can be diabled to save time. Although snakemake will skip the execution
-# of scripts where the outputs are already built, these switches are useful for forced 
+# of scripts where the outputs are already built, these switches are useful for forced
 # re-runs of the snakemake workflow, where you may not necessarily want to rebuild everything
 enable:
   build_natura_raster: true # Rasters natural protection areas onto all cutout regions
   build_topology: true # Base network topology
-  build_cutout: false #false # Atlite cutout
-  use_eskom_wind_solar: false # Model defaults to Eskom hourly pu profiles for all wind and solar generators
-  use_excel_wind_solar: [true,"data/wind_solar_profiles.xlsx"] # Model defaults to excel input hourly pu profiles for all wind and solar generators  
+  build_cutout: true #false # Atlite cutout
+  use_eskom_wind_solar: true # Model defaults to Eskom hourly pu profiles for all wind and solar generators
+  use_excel_wind_solar: [true,"data/wind_solar_profiles.xlsx"] # Model defaults to excel input hourly pu profiles for all wind and solar generators
   build_renewable_profiles: true #false # Enable calculation of renewable profiles
 
 scenario:
@@ -50,17 +50,17 @@ crs:
 
 
 # Specification of relevent years for the model
-years: 
+years:
   reference_demand_year: 2017  # should be a single year at present, could be extended in the future
-  reference_weather_years: 
+  reference_weather_years:
     # reference years used for solar PV and wind profiles - can be single or multiple years
     # if multiple years are specified these are applied sequencially to the simulation years
     solar: [2012]
     onwind: [2012]
-    # reference years from actual Eskom data published at https://www.eskom.co.za/dataportal/ 
-    # can be single or multiple years if multiple years are specified these are applied 
+    # reference years from actual Eskom data published at https://www.eskom.co.za/dataportal/
+    # can be single or multiple years if multiple years are specified these are applied
     # sequencially to the simulation years
-    CSP: [2021] 
+    CSP: [2021]
     biomass: [2021]
     hydro: [2021]
     hydro-import: [2021]
@@ -71,7 +71,7 @@ electricity:
   generator_availability: # generator planned and unplanned outages are included based on Eskom data
     implement_availability: true
     reference_years: [2019] #if multiple years specified an average is used
-    new_unit_ref: 
+    new_unit_ref:
     # New generator availability is based on an existing Eskom generator
     # in the format [generator, ref year/s (avg), rescale e.g 10% higher]
       coal: ['Lethabo', [2017], 1]
@@ -81,35 +81,35 @@ electricity:
 
   # Only for new generators, existing generators are specified in model_file
   min_stable_levels:
-    coal: 0 
-    OCGT: 0 
+    coal: 0
+    OCGT: 0
     CCGT: 0
     nuclear: 0
     biomass: 0
 
-  min_capacity_factor: # Minimum annual capacity factor 
-    CCGT: 0.3 
+  min_capacity_factor: # Minimum annual capacity factor
+    CCGT: 0.3
     nuclear: 0.5
 
   extendable_carriers:
     Renewables: ['onwind', solar]
     Generator: [CCGT, OCGT, coal, nuclear, hydro-import]
-    StorageUnit: [battery, PHS] 
+    StorageUnit: [battery, PHS]
 
   buses:
-    11-supply: 
+    11-supply:
       OCGT: [GAUTENG, WESTERN CAPE, KZN, EASTERN CAPE] # Saldana Bay, Richards Bay, Coega
       CCGT: [GAUTENG, WESTERN CAPE, KZN, EASTERN CAPE]
       coal: [GAUTENG, LIMPOPO] # Johannesburg, Waterberg
       nuclear: [EASTERN CAPE, WESTERN CAPE] # Thyspunt, Koeberg
-      imports: [LIMPOPO]         
+      imports: [LIMPOPO]
     27-supply:
       OCGT: [JOHANNESBURG, WEST COAST, EMPANGENI, PORT ELIZABETH] # Saldana Bay, Richards Bay, Coega
       CCGT: [JOHANNESBURG, WEST COAST, EMPANGENI, PORT ELIZABETH]
       coal: [JOHANNESBURG, WATERBERG]
       nuclear: [PORT ELIZABETH, PENINSULA] # Thyspunt, Koeberg
       imports: [POLOKWANE]
-  
+
 
   reserve_margin:
     coal: 0.8
@@ -124,7 +124,7 @@ electricity:
 
   operating_reserves:
       spinning: ['battery','PHS']
-      total: ['diesel','gas','OCGT','CCGT','battery','PHS'] 
+      total: ['diesel','gas','OCGT','CCGT','battery','PHS']
   max_hours:
     battery: 3
     PHS: 20
@@ -240,7 +240,7 @@ hydro_inflow:
 
 lines:
   v_nom: 400. #changed from 380kV from PyPSA-EUR to 400kV for South Africa
-  #type: 'Al/St 240/40 4-bundle 400.0' 
+  #type: 'Al/St 240/40 4-bundle 400.0'
 #lines:
   types:
     220.: "Al/St 240/40 2-bundle 220.0"
@@ -281,7 +281,7 @@ costs:
   marginal_cost: #
     solar: 0.01
     onwind: 0.015
-    #offwind: 0.015 
+    #offwind: 0.015
     #PV: 0.01
     #Wind: 0.015
   USD_to_ZAR: 18.24
@@ -352,7 +352,7 @@ plotting:
   store_techs: ["Li ion", "water tanks"]
   load_carriers: ["AC load", "heat load", "Li ion load"]
   AC_carriers: ["AC line", "AC transformer"]
-  link_carriers: ["DC line", "Converter AC-DC"] 
+  link_carriers: ["DC line", "Converter AC-DC"]
   heat_links: ["heat pump", "resistive heater", "CHP heat", "CHP electric",
                "gas boiler", "central heat pump", "central resistive heater", "central CHP heat",
                "central CHP electric", "central gas boiler"]
