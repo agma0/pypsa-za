@@ -118,10 +118,10 @@ else:
 
 rule add_electricity:
     input:
-        **{
-            f"profile_{tech}": f"resources/profile_{tech}_"+ "{regions}_{resarea}.nc"
-            for tech in renewable_carriers
-        },
+        # **{
+        #     f"profile_{tech}": f"resources/profile_{tech}_"+ "{regions}_{resarea}.nc"
+        #     for tech in renewable_carriers
+        # },
         base_network='networks/base_{model_file}_{regions}.nc',
         supply_regions='data/bundle/rsa_supply_regions.gpkg',
         load='data/bundle/SystemEnergy2009_22.csv',
