@@ -22,9 +22,9 @@ logging:
 # of scripts where the outputs are already built, these switches are useful for forced
 # re-runs of the snakemake workflow, where you may not necessarily want to rebuild everything
 enable:
-  build_natura_raster: true # Rasters natural protection areas onto all cutout regions
+  build_natura_raster: false # Rasters natural protection areas onto all cutout regions
   build_topology: true # Base network topology
-  build_cutout: true #false # Atlite cutout
+  build_cutout: false #false # Atlite cutout
   use_eskom_wind_solar: true # Model defaults to Eskom hourly pu profiles for all wind and solar generators
   use_excel_wind_solar: [true,"data/wind_solar_profiles.xlsx"] # Model defaults to excel input hourly pu profiles for all wind and solar generators
   build_renewable_profiles: true #false # Enable calculation of renewable profiles
@@ -33,7 +33,7 @@ scenario:
   resarea: [redz]
   regions: [27-supply]
   ll: ['copt']
-  model_file: ['IRP_2019','validation_4']
+  model_file: ['val-LC-UNC']
   opts: [Co2L-3H,LC-1H]
 
 # General inputs
