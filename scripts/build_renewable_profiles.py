@@ -163,14 +163,14 @@ SALANDCOVER_CRS = "EPSG:32635"
 
 def remove_leap_day(df):
     return df[~((df.index.month == 2) & (df.index.day == 29))]
-
+#%%
 if __name__ == "__main__":
     if "snakemake" not in globals():
         from _helpers import mock_snakemake
 
         #snakemake = mock_snakemake("build_renewable_profiles", technology="onwind")
-        snakemake = mock_snakemake('build_renewable_profiles',technology='solar', 
-                    **{'regions':'1-supply',
+        snakemake = mock_snakemake('build_renewable_profiles',technology='solar',
+                    **{'regions':'27-supply',
                     'resarea':'redz'})
     configure_logging(snakemake)
     pgb.streams.wrap_stderr()
@@ -182,7 +182,7 @@ if __name__ == "__main__":
     correction_factor = config.get("correction_factor", 1.0)
     capacity_per_sqkm = config["capacity_per_sqkm"]
     p_nom_max_meth = config.get("potential", "conservative")
-  
+
     if correction_factor != 1.0:
         logger.info(f"correction_factor is set as {correction_factor}")
 
@@ -196,7 +196,7 @@ if __name__ == "__main__":
         "disable the corresponding renewable technology"
     )
 
-    if ((snakemake.wildcards.technology=='onwind') & 
+    if ((snakemake.wildcards.technology=='onwind') &
         (snakemake.config["atlite"]["apply_wind_correction"])):
         gwa_data = rioxarray.open_rasterio(snakemake.input.gwa_map)
         ds=gwa_data.sel(band=1, x=slice(*cutout.extent[[0,1]]), y=slice(*cutout.extent[[3,2]]))
@@ -207,7 +207,7 @@ if __name__ == "__main__":
         bias_correction=ds/cutout.data.wnd100m.mean("time")
         bias_correction=bias_correction.fillna(1)
         cutout.data.wnd100m.values=(bias_correction*cutout.data.wnd100m).transpose('time', 'y', 'x').values
-          
+
     # do not pull up, set_index does not work if geo dataframe is empty
     regions = regions.set_index("name").rename_axis("bus")
     buses = regions.index
