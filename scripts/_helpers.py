@@ -8,7 +8,8 @@ from pathlib import Path
 import geopandas as gpd
 import numpy as np
 import pandas as pd
-from pypsa.descriptors import (Dict,get_active_assets)
+import pypsa
+from pypsa.descriptors import (Dict, get_active_assets)
 from pypsa.descriptors import get_switchable_as_dense as get_as_dense
 
 def sets_path_to_root(root_directory_name):

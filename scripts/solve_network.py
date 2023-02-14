@@ -88,15 +88,7 @@ from pypsa.linopf import (
     join_exprs,
     linexpr,
     network_lopf,
-)
-
-from pypsa.linopt import (
-    define_constraints,
-    define_variables,
     get_con,
-    get_var,
-    join_exprs,
-    linexpr,
     run_and_read_cbc,
     run_and_read_cplex,
     run_and_read_glpk,
@@ -121,6 +113,7 @@ from pypsa.descriptors import (
     nominal_attrs,
 )
 idx = pd.IndexSlice
+
 from vresutils.benchmark import memory_logger
 
 import warnings
@@ -130,10 +123,10 @@ logger = logging.getLogger(__name__)
 
 
 def prepare_network(n, solve_opts):
-
     if "clip_p_max_pu" in solve_opts:
         for df in (n.generators_t.p_max_pu, n.storage_units_t.inflow):
             df.where(df > solve_opts["clip_p_max_pu"], other=0.0, inplace=True)
+
     clean_pu_profiles(n)
     load_shedding = solve_opts.get("load_shedding")
     if load_shedding:
@@ -461,7 +454,7 @@ def add_local_max_capacity_constraint(n,snapshots):
     cap_vars = get_var(n, c, attr)[ext_and_active.columns]
 
     lhs = (linexpr((ext_and_active, cap_vars)).T
-           .groupby([n.df(c).carrier, n.df(c).country]).sum(**agg_group_kwargs).T)
+           .groupby([n.df(c).carrier, n.df(c).country]).sum(**agg_group_kwargs).T) # agg_group_kwargs not defined ? ##agatha
 
     p_nom_max_w = n.df(c).p_nom_max.div(n.df(c).weight).loc[ext_and_active.columns]
     p_nom_max_t = expand_series(p_nom_max_w, time_valid).T
@@ -471,6 +464,67 @@ def add_local_max_capacity_constraint(n,snapshots):
            .max(**agg_group_kwargs))
 
     define_constraints(n, lhs, "<=", rhs, 'GlobalConstraint', 'res_limit')
+
+
+# functions for extra functionalities -> added from pypsa-eur ##agatha
+# add_BAU_constraints, add_SAFE_constraint, add_operational_reserve_margin_constraint
+# line 473 - 530 -> otherwise functions not defined
+def add_BAU_constraints(n, config):
+    mincaps = pd.Series(config["electricity"]["BAU_mincapacities"])
+    lhs = (
+        linexpr((1, get_var(n, "Generator", "p_nom")))
+        .groupby(n.generators.carrier)
+        .apply(join_exprs)
+    )
+    define_constraints(n, lhs, ">=", mincaps[lhs.index], "Carrier", "bau_mincaps")
+
+def add_SAFE_constraints(n, config):
+    peakdemand = (
+        1.0 + config["electricity"]["SAFE_reservemargin"]
+    ) * n.loads_t.p_set.sum(axis=1).max()
+    conv_techs = config["plotting"]["conv_techs"]
+    exist_conv_caps = n.generators.query(
+        "~p_nom_extendable & carrier in @conv_techs"
+    ).p_nom.sum()
+    ext_gens_i = n.generators.query("carrier in @conv_techs & p_nom_extendable").index
+    lhs = linexpr((1, get_var(n, "Generator", "p_nom")[ext_gens_i])).sum()
+    rhs = peakdemand - exist_conv_caps
+    define_constraints(n, lhs, ">=", rhs, "Safe", "mintotalcap")
+
+def add_operational_reserve_margin_constraint(n, config):
+    reserve_config = config["electricity"]["operational_reserve"]
+    EPSILON_LOAD = reserve_config["epsilon_load"]
+    EPSILON_VRES = reserve_config["epsilon_vres"]
+    CONTINGENCY = reserve_config["contingency"]
+
+    # Reserve Variables
+    reserve = get_var(n, "Generator", "r")
+    lhs = linexpr((1, reserve)).sum(1)
+
+    # Share of extendable renewable capacities
+    ext_i = n.generators.query("p_nom_extendable").index
+    vres_i = n.generators_t.p_max_pu.columns
+    if not ext_i.empty and not vres_i.empty:
+        capacity_factor = n.generators_t.p_max_pu[vres_i.intersection(ext_i)]
+        renewable_capacity_variables = get_var(n, "Generator", "p_nom")[
+            vres_i.intersection(ext_i)
+        ]
+        lhs += linexpr(
+            (-EPSILON_VRES * capacity_factor, renewable_capacity_variables)
+        ).sum(1)
+
+    # Total demand at t
+    demand = n.loads_t.p_set.sum(1)
+
+    # VRES potential of non extendable generators
+    capacity_factor = n.generators_t.p_max_pu[vres_i.difference(ext_i)]
+    renewable_capacity = n.generators.p_nom[vres_i.difference(ext_i)]
+    potential = (capacity_factor * renewable_capacity).sum(1)
+
+    # Right-hand-side
+    rhs = EPSILON_LOAD * demand + EPSILON_VRES * potential + CONTINGENCY
+
+    define_constraints(n, lhs, ">=", rhs, "Reserve margin")
 
 def extra_functionality(n, snapshots):
     """
@@ -488,7 +542,7 @@ def extra_functionality(n, snapshots):
         add_CCL_constraints(n, snapshots,config)
     reserve = config["electricity"].get("operational_reserve", {})
     if reserve.get("activate"):
-        add_operational_reserve_margin(n, snapshots, config)
+        add_operational_reserve_margin_constraint(n, snapshots, config) #added _constraint
     for o in opts:
         if "EQ" in o:
             add_EQ_constraints(n, snapshots, o)

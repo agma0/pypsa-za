@@ -113,7 +113,6 @@ def build_topology():
         a = np.sin(dlat / 2) ** 2 + np.cos(lat1) * np.cos(lat2) * np.sin(dlon / 2) ** 2
         c = 2 * np.arcsin(np.sqrt(a))
         return c * 6371
-
     # If lines is empty, return empty dataframes
     if lines.empty:
         lines = pd.DataFrame(index=[],columns=['name','bus0','bus1','length','num_parallel'])

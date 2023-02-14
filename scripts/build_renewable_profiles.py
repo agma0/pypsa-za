@@ -169,7 +169,7 @@ if __name__ == "__main__":
         from _helpers import mock_snakemake
 
         #snakemake = mock_snakemake("build_renewable_profiles", technology="onwind")
-        snakemake = mock_snakemake('build_renewable_profiles',technology='solar',
+        snakemake = mock_snakemake('build_renewable_profiles', technology='solar',
                     **{'regions':'27-supply',
                     'resarea':'redz'})
     configure_logging(snakemake)

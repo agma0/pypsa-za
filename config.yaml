@@ -4,27 +4,15 @@ logging:
   level: INFO
   format: "%(levelname)s:%(name)s:%(message)s"
 
-# General inputs #agatha auskommentiert
-#data:
- # resarea:
-  #  redz: REDZ_DEA_Unpublished_Draft_2015
-   # corridors: Power_corridors
-
-# definition of the Coordinate Reference Systems
-#crs:
- # geo_crs: EPSG:4326  # general geographic projection, not used for metric measures. "EPSG:4326" is the standard used by OSM and google maps
-  #distance_crs: EPSG:3857  # projection for distance measurements only. Possible recommended values are "EPSG:3857" (used by OSM and Google Maps)
-  #area_crs: ESRI:54009  # projection for area measurements only. Possible recommended values are Global Mollweide "ESRI:54009"
-
 # When running the model for the first time it is necessary to enable the following scripts:
 # build_natura_raster, build_population, build_topology, build_cutout. For subsequent model
 # runs these scripts can be diabled to save time. Although snakemake will skip the execution
 # of scripts where the outputs are already built, these switches are useful for forced
 # re-runs of the snakemake workflow, where you may not necessarily want to rebuild everything
 enable:
-  build_natura_raster: false # Rasters natural protection areas onto all cutout regions
+  build_natura_raster: true # Rasters natural protection areas onto all cutout regions
   build_topology: true # Base network topology
-  build_cutout: false #false # Atlite cutout
+  build_cutout: true #false # Atlite cutout
   use_eskom_wind_solar: true # Model defaults to Eskom hourly pu profiles for all wind and solar generators
   use_excel_wind_solar: [true,"data/wind_solar_profiles.xlsx"] # Model defaults to excel input hourly pu profiles for all wind and solar generators
   build_renewable_profiles: true #false # Enable calculation of renewable profiles
@@ -87,7 +75,7 @@ electricity:
     nuclear: 0
     biomass: 0
 
-  min_capacity_factor: # Minimum annual capacity factor
+  min_capacity_factor: # Minimum annual capacity factor - per week?
     CCGT: 0.3
     nuclear: 0.5
 
@@ -328,10 +316,10 @@ solving:
     # max_iterations: 1
     # nhours: 10
   solver:
-    name: xpress
-    lpflags: 4
-    crossover: 0
-    bargapstop: 1.e-5
+    name: glpk
+    # lpflags: 4
+    # crossover: 0
+    # bargapstop: 1.e-5
     # FeasibilityTol: 1.e-6
     # LogToConsole: 0
     # OutputFlag: 1
