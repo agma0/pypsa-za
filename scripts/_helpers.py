@@ -526,7 +526,7 @@ def read_csv_nafix(file, **kwargs):
     if "na_values" in kwargs:
         del kwargs["na_values"]
 
-    return pd.read_csv(file, **kwargs, keep_default_na=False, na_values=NA_VALUES)  #agatha NA_VALUES not defined ????
+    return pd.read_csv(file, **kwargs, keep_default_na=False, na_values="NA_VALUES")  #agatha NA_VALUES not defined -> as string?
 
 
 def to_csv_nafix(df, path, **kwargs):
@@ -534,7 +534,7 @@ def to_csv_nafix(df, path, **kwargs):
         del kwargs["na_rep"]
     # if len(df) > 0:
     if not df.empty:
-        return df.to_csv(path, **kwargs, na_rep=NA_VALUES[0])
+        return df.to_csv(path, **kwargs, na_rep="NA_VALUES[0]")
     else:
         with open(path, "w") as fp:
             pass
