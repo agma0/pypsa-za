@@ -157,14 +157,14 @@ def build_topology():
 
     return buses, lines
 
-if __name__ == "__main__":
+if __name__ == "__main__": #chaged mocksnakemake input
     if 'snakemake' not in globals():
         from _helpers import mock_snakemake
         snakemake = mock_snakemake(
             'build_topology', 
             **{
                 'model_file':'val-LC-UNC',
-                'regions':'11-supply',
+                'regions':'27-supply',
                 'resarea':'redz',
                 'll':'copt',
                 'opts':'LC-24H',
