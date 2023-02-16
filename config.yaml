@@ -22,7 +22,7 @@ scenario:
   regions: [27-supply]
   ll: ['copt']
   model_file: ['val-LC-UNC']
-  opts: [Co2L-3H,LC-1H]
+  opts: [Co2L-2190H,LC-2190H]
 
 # General inputs
 data:
@@ -309,18 +309,18 @@ solving:
     clip_p_max_pu: 1.e-2
     load_shedding: true
     noisy_costs: true
-    skip_iterations: false
+    skip_iterations: true
     min_iterations: 1
     max_iterations: 10
     formulation: kirchhoff
     # max_iterations: 1
     # nhours: 10
   solver:
-    name: glpk
+    name: gurobi
     # lpflags: 4
-    # crossover: 0
+    crossover: 0
     # bargapstop: 1.e-5
-    # FeasibilityTol: 1.e-6
+    FeasibilityTol: 1.e-5
     # LogToConsole: 0
     # OutputFlag: 1
 
