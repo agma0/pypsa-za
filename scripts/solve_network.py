@@ -258,7 +258,7 @@ def add_EQ_constraints(n, sns, o, scaling=1e-1):
     define_constraints(n, lhs, ">=", rhs, "equity", "min")
 
 def min_capacity_factor(n,sns):
-    for y in n.investment_periods:
+    for y in n.snapshots.get_level_values(0).unique():
         for carrier in snakemake.config["electricity"]["min_capacity_factor"]:
             # only apply to extendable generators for now
             cf = snakemake.config["electricity"]["min_capacity_factor"][carrier]
@@ -271,10 +271,10 @@ def min_capacity_factor(n,sns):
 
 # Reserve requirement of 1GW for spinning acting reserves from PHS or battery, and 2.2GW of total reserves
 def reserves(n, sns):
-    
-    # Operating reserves    
+
+    # Operating reserves
     model_setup = pd.read_excel(
-            snakemake.input.model_file, 
+            snakemake.input.model_file,
             sheet_name='model_setup',
             index_col=[0]
     ).loc[snakemake.wildcards.model_file]
@@ -285,10 +285,10 @@ def reserves(n, sns):
 
     for reserve_type in ['spinning','total']:
         carriers = snakemake.config["electricity"]["operating_reserves"][reserve_type]
-        for y in n.investment_periods:
+        for y in n.snapshots.get_level_values(0).unique():
             lhs=0
             rhs = reserve_requirements.loc[(model_setup['projected_parameters'],reserve_type+'_reserves'),y]
-            
+
             # Generators
             for tech_type in ['Generator','StorageUnit']:
                 active = get_active_assets(n,tech_type,y)
@@ -309,30 +309,30 @@ def reserves(n, sns):
                     else:
                         tech_p_nom=get_var(n, tech_type, 'p_nom')[tech]
                         lhs+=linexpr((p_max_pu,tech_p_nom))
-            lhs.index=pd.MultiIndex.from_arrays([lhs.index.year,lhs.index])  
+            lhs.index=pd.MultiIndex.from_arrays([lhs.index.year,lhs.index])
             rhs.index=pd.MultiIndex.from_arrays([rhs.index.year,rhs.index])
             define_constraints(n, lhs, '>=',rhs, 'Reserves_'+str(y)+'_'+reserve_type)
 
     ###################################################################################
     # Reserve margin above maximum peak demand in each year
-    # The sum of res_margin_carriers multiplied by their assumed constribution factors 
+    # The sum of res_margin_carriers multiplied by their assumed constribution factors
     # must be higher than the maximum peak demand in each year by the reserve_margin value
 
     peakdemand = n.loads_t.p_set.sum(axis=1).groupby(n.snapshots.get_level_values(0)).max()
     res_margin_carriers = snakemake.config['electricity']['reserve_margin']
 
-    for y in n.investment_periods:
-        if reserve_requirements.loc[(model_setup['projected_parameters'],'reserve_margin_active'),y]:    
+    for y in n.snapshots.get_level_values(0).unique():
+        if reserve_requirements.loc[(model_setup['projected_parameters'],'reserve_margin_active'),y]:
             active = (
                 n.generators.index[n.get_active_assets('Generator',y)]
                 .append(n.storage_units.index[n.get_active_assets('StorageUnit',y)])
-            ).to_list() 
+            ).to_list()
 
             exist_capacity=0
             for c in ['Generator','StorageUnit']:
                 non_ext_gen_i = n.df(c).index[
-                    (n.df(c).carrier.isin(res_margin_carriers)) & 
-                    (n.df(c).p_nom_extendable==False) & 
+                    (n.df(c).carrier.isin(res_margin_carriers)) &
+                    (n.df(c).p_nom_extendable==False) &
                     (n.df(c).index.isin(active))
                 ]
                 exist_capacity += (
@@ -341,15 +341,15 @@ def reserves(n, sns):
                 ).sum()
 
                 ext_gen_i = n.df(c).index[
-                    (n.df(c).carrier.isin(res_margin_carriers)) & 
-                    (n.df(c).p_nom_extendable==True) & 
+                    (n.df(c).carrier.isin(res_margin_carriers)) &
+                    (n.df(c).p_nom_extendable==True) &
                     (n.df(c).index.isin(active))
                 ]
                 if c =='Generator':
                     lhs = linexpr(
                         (
                             n.df(c).loc[ext_gen_i,'carrier']
-                            .map(res_margin_carriers), 
+                            .map(res_margin_carriers),
                             get_var(n, c, "p_nom")[ext_gen_i]
                         )
                     ).sum()
@@ -357,13 +357,13 @@ def reserves(n, sns):
                     lhs += linexpr(
                         (
                             n.df(c).loc[ext_gen_i,'carrier']
-                            .map(res_margin_carriers), 
+                            .map(res_margin_carriers),
                             get_var(n, c, "p_nom")[ext_gen_i]
                         )
                     ).sum()
 
             rhs = (peakdemand.loc[y]*(1+
-                reserve_requirements.loc[(model_setup['projected_parameters'],'reserve_margin'),y]) 
+                reserve_requirements.loc[(model_setup['projected_parameters'],'reserve_margin'),y])
                 - exist_capacity
             )
             define_constraints(n, lhs, ">=", rhs, "reserve_margin", str(y))
@@ -526,6 +526,51 @@ def add_operational_reserve_margin_constraint(n, config):
 
     define_constraints(n, lhs, ">=", rhs, "Reserve margin")
 
+# Define max additional investment in ZAR - CO2 tax income 2030 with 30US$
+
+# carrier types from model_file
+# generator: coal, gas, nuclear, onwind, hydro, hydro-import, solar, CSP, biomass
+# storage unit: PHS, battery
+# ccgt, ocgt
+
+# types from config
+#   extendable_carriers:
+#     Renewables: ['onwind', solar]
+#     Generator: [CCGT, OCGT, coal, nuclear, hydro-import]
+#     StorageUnit: [battery, PHS]
+
+
+# ZAR 1,4 billion in 2021 with ZAR 122/tCO2e -> hochskalieren! Prognose 2030?
+max_add_carbon_investment = 1400000000
+
+def add_carbontax_contraints(n, year=2030):
+    renewable_carriers = ['solar', 'onwind', 'CSP', 'biomass', 'hydro'] # in config.yaml deklariert #hydroimport???
+    add_generators = n.generators[(n.generators['carrier'].isin(renewable_carriers))
+                                  & (n.generators.build_year==year)]
+    add_storage_units = n.storage_units[(n.storage_units['carrier'] == 'PHS')
+                                        & (n.storage_units.build_year==year)]
+
+    if add_generators.empty and add_storage_units.empty or ('Generator', 'p_nom') not in n.variables.index:
+        return
+
+    generators_p_nom = get_var(n, "Generator", "p_nom")
+
+    stores_p_nom = get_var(n, "StorageUnit", "p_nom")
+    lhs = linexpr((add_generators['capital_cost'], generators_p_nom[add_generators.index])).sum()
+    lhs += linexpr((add_storage_units['capital_cost'],stores_p_nom[add_storage_units.index])).sum()
+
+    define_constraints(n, lhs, "<=", max_add_carbon_investment, 'Generator-Storage', 'additional_carbontax_investment')
+
+### ideas
+# define 25% , 50%, 75%, 100% of revenues - show scenarios
+# climate goals 2030 - 400 MtCO2e ? -> change CO2 limit in config.yaml line 69
+# end load shedding? changes in loadshedding (2030) if revenues are invested in RE?
+
+# add new data SACAD/SAPAD? 2022?
+
+# where to provide free solar geysers? -> from household data!
+
+
 def extra_functionality(n, snapshots):
     """
     Collects supplementary constraints which will be passed to ``pypsa.linopf.network_lopf``.
@@ -549,6 +594,7 @@ def extra_functionality(n, snapshots):
     min_capacity_factor(n,snapshots)
     define_storage_global_constraints(n, snapshots)
     reserves(n,snapshots)
+    add_carbontax_contraints(n)
 
 def solve_network(n, config, opts="", **kwargs):
     solver_options = config["solving"]["solver"].copy()
@@ -557,7 +603,19 @@ def solve_network(n, config, opts="", **kwargs):
     track_iterations = cf_solving.get("track_iterations", False)
     min_iterations = cf_solving.get("min_iterations", 4)
     max_iterations = cf_solving.get("max_iterations", 6)
+
     multi_investment_periods=isinstance(n.snapshots, pd.MultiIndex)
+    multi_investment_periods=False
+
+    #  only consider investments until 2030
+    # wished_sn = n.snapshots[n.snapshots.get_level_values(0)<=2030]
+    # n.set_snapshots(wished_sn)
+    n.add("GlobalConstraint",
+          "CO2Limit2030",
+          carrier_attribute="co2_emissions",
+          sense="<=",
+          investment_period=2030,
+          constant=96e6)
 
 
     # add to network for extra_functionality
@@ -588,7 +646,7 @@ def solve_network(n, config, opts="", **kwargs):
 
     return n
 
-
+#%%
 if __name__ == "__main__":
     if "snakemake" not in globals():
         from _helpers import mock_snakemake
@@ -596,13 +654,13 @@ if __name__ == "__main__":
         os.chdir(os.path.dirname(os.path.abspath(__file__)))
         from _helpers import mock_snakemake
         snakemake = mock_snakemake(
-            'solve_network', 
+            'solve_network',
             **{
                 'model_file':'val-LC-UNC',
-                'regions':'RSA',
+                'regions':'27-supply',
                 'resarea':'redz',
                 'll':'copt',
-                'opts':'LC-4380SEG',
+                'opts':'Co2L-3H',
                 'attr':'p_nom'
             }
         )
@@ -617,6 +675,8 @@ if __name__ == "__main__":
     fn = getattr(snakemake.log, "memory", None)
     with memory_logger(filename=fn, interval=30.0) as mem:
         n = pypsa.Network(snakemake.input[0])
+        n.set_snapshots(n.snapshots[n.snapshots.get_level_values(0)==2030])
+        n.global_constraints = n.global_constraints[n.global_constraints.index.str.contains("2030")]
         if snakemake.config["augmented_line_connection"].get("add_to_snakefile"):
             n.lines.loc[
                 n.lines.index.str.contains("new"), "s_nom_min"
