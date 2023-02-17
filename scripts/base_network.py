@@ -120,18 +120,18 @@ def add_components_to_network(n, buses, lines, line_config):
                          num_parallel=lambda df: df.num_parallel.clip(lower=0.5))
     n.import_components_from_dataframe(buses, "Bus")
     n.import_components_from_dataframe(lines, "Line")
-
+#%%
 if __name__ == "__main__":
     if 'snakemake' not in globals():
         from _helpers import mock_snakemake
         snakemake = mock_snakemake(
-                        'base_network', 
+                        'base_network',
                         **{
                             'model_file':'val-LC-UNC',
-                            'regions':'1-supply',
+                            'regions':'27-supply',
                             'resarea':'redz',
                             'll':'copt',
-                            'opts':'LC',
+                            'opts':'Co2L-2190H',
                             'attr':'p_nom',
                         }
                     )
@@ -139,7 +139,7 @@ if __name__ == "__main__":
     # Create network and load buses and lines data
     n = create_network()
     buses, lines = load_buses_and_lines(n)
-        
+
     # Set snapshots and investment periods
     years = (
                 pd.read_excel(
@@ -151,9 +151,11 @@ if __name__ == "__main__":
     )
 
     years = list(map(int, years.strip('[]').split(',')))
+    # # trim down to 2030
+    years = [year for year in years if year<=2030]
     set_snapshots(n,years)
     set_investment_periods(n,years)
-    
+
     # Set line capacity and add components to network
     line_config = snakemake.config['lines']
     buses.drop('geometry',axis=1,inplace=True)

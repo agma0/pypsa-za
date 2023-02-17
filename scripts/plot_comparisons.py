@@ -1,5 +1,8 @@
 import os
 import pandas as pd
+import snakemake #added agatha
+import matplotlib.pyplot as plt #added agatha
+from operator import itemgetter #added agatha
 from itertools import product
 
 opts = snakemake.config['plotting']
@@ -26,6 +29,6 @@ for vals in product(*scenarios.values()):
     fn = tmpl.format(**sc)
     c = cost_df.xs(key=vals, level=scenarios.keys())
     fig, ax = plt.subplots()
-    c.rename(nice_names).plot.bar(stacked=True, color=itemgetter(c.index)(opts['tech_colors']), ax=ax)
+    c.rename('nice_names').plot.bar(stacked=True, color=itemgetter(c.index)(opts['tech_colors']), ax=ax)
     for ext in snakemake.params.exts:
         fig.savefig(os.path.join(plot_dir, fn + '.' + ext))

@@ -10,9 +10,9 @@ logging:
 # of scripts where the outputs are already built, these switches are useful for forced
 # re-runs of the snakemake workflow, where you may not necessarily want to rebuild everything
 enable:
-  build_natura_raster: true # Rasters natural protection areas onto all cutout regions
-  build_topology: true # Base network topology
-  build_cutout: true #false # Atlite cutout
+  build_natura_raster: false # Rasters natural protection areas onto all cutout regions
+  build_topology: false # Base network topology
+  build_cutout: false #false # Atlite cutout
   use_eskom_wind_solar: true # Model defaults to Eskom hourly pu profiles for all wind and solar generators
   use_excel_wind_solar: [true,"data/wind_solar_profiles.xlsx"] # Model defaults to excel input hourly pu profiles for all wind and solar generators
   build_renewable_profiles: true #false # Enable calculation of renewable profiles
@@ -22,7 +22,7 @@ scenario:
   regions: [27-supply]
   ll: ['copt']
   model_file: ['val-LC-UNC']
-  opts: [Co2L-3H,LC-1H]
+  opts: [Co2L-2190H,LC-2190H]
 
 # General inputs
 data:
@@ -301,7 +301,7 @@ tsam_clustering:
   hoursPerPeriod: 24
   clusterMethod: 'hierarchical'
   nprocesses: 15
-  solver: 'cbc' #need to use open source solver here due to parallel processing of years
+  solver: 'glpk' #need to use open source solver here due to parallel processing of years
 
 solving:
   tmpdir: /tmp
@@ -309,7 +309,7 @@ solving:
     clip_p_max_pu: 1.e-2
     load_shedding: true
     noisy_costs: true
-    skip_iterations: false
+    skip_iterations: true
     min_iterations: 1
     max_iterations: 10
     formulation: kirchhoff
@@ -318,9 +318,9 @@ solving:
   solver:
     name: glpk
     # lpflags: 4
-    # crossover: 0
+    crossover: 0
     # bargapstop: 1.e-5
-    # FeasibilityTol: 1.e-6
+    FeasibilityTol: 1.e-5
     # LogToConsole: 0
     # OutputFlag: 1
 

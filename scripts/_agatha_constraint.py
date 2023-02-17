@@ -36,6 +36,7 @@ def add_carbontax_contraints(n):
         return
 
     generators_p_nom = get_var(n, "Generator", "p_nom")
+
     lhs = linexpr((add_generators['capital_cost'], generators_p_nom[add_generators.index])).sum()
     lhs += linexpr((add_storage_units['capital_cost'],)).sum()
 
