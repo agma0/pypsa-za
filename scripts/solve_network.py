@@ -540,8 +540,8 @@ def add_operational_reserve_margin_constraint(n, config):
 #     StorageUnit: [battery, PHS]
 
 
-# ZAR 1,4 billion in 2021 with ZAR 122/tCO2e -> hochskalieren! Prognose 2030?
-max_add_carbon_investment = 1400000000
+# ZAR 8 billion in 2030 -> Prognosis 2030 Worldbank (2022)
+max_add_carbon_investment = 8e9
 
 def add_carbontax_contraints(n, year=2030):
     renewable_carriers = ['solar', 'onwind', 'CSP', 'biomass', 'hydro'] # in config.yaml deklariert #hydroimport???
