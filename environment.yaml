@@ -17,7 +17,7 @@ dependencies:
   - pyomo
   - netcdf4
   - xarray
-  - cartopy==0.21.0 #agatha
+  - cartopy #==0.21.0 #agatha
 
   # Include ipython so that one does not inadvertently drop out of the conda
   # environment by calling ipython
@@ -31,10 +31,10 @@ dependencies:
   - conda-forge::geopandas
   - conda-forge::rasterstats
   - conda-forge::rasterio
-  - conda-forge::shapely
+  - conda-forge::shapely<=1.8.5
 
   - pip:
-    - pypsa==0.21.3 #agatha
+    - pypsa #==0.21.3 #agatha
     - vresutils>=0.2.4
     - countrycode
     - atlite #agatha
@@ -42,8 +42,7 @@ dependencies:
     - tsam #agatha
     - openpyxl # lisa
     - powerplantmatching # lisa
-    - fiona==1.8.22 #agatha
+    - fiona #==1.8.22 #agatha
     #- gdal==3.5.3 #agatha
-    - shapely==1.8.5 #agatha
     - dask==2022.10.2 #agatha
 

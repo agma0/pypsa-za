@@ -11,11 +11,17 @@ logging:
 # re-runs of the snakemake workflow, where you may not necessarily want to rebuild everything
 enable:
   build_natura_raster: false # Rasters natural protection areas onto all cutout regions
-  build_topology: false # Base network topology
   build_cutout: false #false # Atlite cutout
-  use_eskom_wind_solar: true # Model defaults to Eskom hourly pu profiles for all wind and solar generators
-  use_excel_wind_solar: [true,"data/wind_solar_profiles.xlsx"] # Model defaults to excel input hourly pu profiles for all wind and solar generators
-  build_renewable_profiles: true #false # Enable calculation of renewable profiles
+  build_topology: false # Base network topology
+  use_eskom_wind_solar: false # Model defaults to Eskom hourly pu profiles for all wind and solar generators
+  use_excel_wind_solar: [false,"data/wind_solar_profiles.xlsx"] # Model defaults to excel input hourly pu profiles for all wind and solar generators
+  build_renewable_profiles: false #false # Enable calculation of renewable profiles
+  # added agatha - disable all functions except plot
+  base_network: false
+  add_electricity: false
+  prepare_network: false
+  solve_network: false
+
 
 scenario:
   resarea: [redz]
