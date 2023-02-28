@@ -56,7 +56,7 @@ years:
     hydro-import: [2021]
 
 electricity:
-  co2limit: 2.2e+9    # Cumulative CO2 emissions budget for all simulation years combined
+  co2limit: 96e+6  #96Mt #2.2e+9 #Cumulative CO2 emissions budget for all simulation years combined
   renewable_carriers: [solar, onwind, CSP, biomass, hydro, hydro-import] # defines renewable carriers
   generator_availability: # generator planned and unplanned outages are included based on Eskom data
     implement_availability: true
