@@ -12,23 +12,19 @@ logging:
 enable:
   build_natura_raster: false # Rasters natural protection areas onto all cutout regions
   build_cutout: false #false # Atlite cutout
-  build_topology: false # Base network topology
+  build_topology: true # Base network topology
   use_eskom_wind_solar: false # Model defaults to Eskom hourly pu profiles for all wind and solar generators
   use_excel_wind_solar: [false,"data/wind_solar_profiles.xlsx"] # Model defaults to excel input hourly pu profiles for all wind and solar generators
-  build_renewable_profiles: false #false # Enable calculation of renewable profiles
-  # added agatha - disable all functions except plot
-  base_network: false
-  add_electricity: false
-  prepare_network: false
-  solve_network: false
+  build_renewable_profiles: true #false # Enable calculation of renewable profiles
+
 
 
 scenario:
   resarea: [redz]
   regions: [27-supply]
   ll: ['copt']
-  model_file: ['val-LC-UNC']
-  opts: [Co2L-2190H,LC-2190H]
+  model_file: ['val-LC-IRP']
+  opts: [LC-2190H, Co2L-2190H]
 
 # General inputs
 data:

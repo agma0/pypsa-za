@@ -127,7 +127,7 @@ if __name__ == "__main__":
         snakemake = mock_snakemake(
                         'base_network',
                         **{
-                            'model_file':'val-LC-UNC',
+                            'model_file':'val-LC-IRP',
                             'regions':'27-supply',
                             'resarea':'redz',
                             'll':'copt',

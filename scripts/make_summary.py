@@ -3,7 +3,7 @@ from six import iteritems
 from itertools import product
 import pandas as pd
 import snakemake #agatha added
-
+import logging
 import pypsa
 
 from add_electricity import load_costs, update_transmission_costs
@@ -11,6 +11,8 @@ from add_electricity import load_costs, update_transmission_costs
 idx = pd.IndexSlice
 
 opt_name = {"Store": "e", "Line" : "s", "Transformer" : "s"}
+
+logger = logging.getLogger(__name__)
 
 def assign_carriers(n):
 

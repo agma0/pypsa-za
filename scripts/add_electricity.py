@@ -5,12 +5,9 @@
 
 """
 Adds electrical generators, load and existing hydro storage units to a base network.
-
 Relevant Settings
 -----------------
-
 .. code:: yaml
-
     costs:
         year:
         USD_to_ZAR:
@@ -19,7 +16,6 @@ Relevant Settings
         dicountrate:
         emission_prices:
         load_shedding:
-
     electricity:
         max_hours:
         marginal_cost:
@@ -29,27 +25,22 @@ Relevant Settings
         extendable_carriers:
         include_renewable_capacities_from_OPSD:
         estimate_renewable_capacities_from_capacity_stats:
-
     load:
         scale:
         ssp:
         weather_year:
         prediction_year:
         region_load:
-
     renewable:
         hydro:
             carriers:
             hydro_max_hours:
             hydro_capital_cost:
-
     lines:
         length_factor:
-
 .. seealso::
     Documentation of the configuration file ``config.yaml`` at :ref:`costs_cf`,
     :ref:`electricity_cf`, :ref:`load_cf`, :ref:`renewable_cf`, :ref:`lines_cf`
-
 Inputs
 ------
 - ``model_file.xlsx``: The database to setup different scenarios based on cost assumptions for all included technologies for specific years from various sources; e.g. discount rate, lifetime, investment (CAPEX), fixed operation and maintenance (FOM), variable operation and maintenance (VOM), fuel costs, efficiency, carbon-dioxide intensity.
@@ -61,26 +52,18 @@ Inputs
 - ``data/bundle/supply_regions/{regions}.shp``: confer :ref:`powerplants`
 - ``resources/profile_{}_{regions}_{resarea}.nc``: all technologies in ``config["renewables"].keys()``, confer :ref:`renewableprofiles`.
 - ``networks/base_{model_file}_{regions}.nc``: confer :ref:`base`
-
 Outputs
 -------
-
 - ``networks/elec_{model_file}_{regions}_{resarea}.nc``:
-
     .. image:: ../img/elec.png
             :scale: 33 %
-
 Description
 -----------
-
 The rule :mod:`add_electricity` ties all the different data inputs from the preceding rules together into a detailed PyPSA network that is stored in ``networks/elec.nc``. It includes:
-
 - today's transmission topology and transfer capacities (in future, optionally including lines which are under construction according to the config settings ``lines: under_construction`` and ``links: under_construction``),
 - today's thermal and hydro power generation capacities (for the technologies listed in the config setting ``electricity: conventional_carriers``), and
 - today's load time-series (upsampled in a top-down approach according to population and gross domestic product)
-
 It further adds extendable ``generators`` with **zero** capacity for
-
 - photovoltaic, onshore and AC- as well as DC-connected offshore wind installations with today's locational, hourly wind and solar capacity factors (but **no** current capacities),
 - additional open- and combined-cycle gas turbines (if ``OCGT`` and/or ``CCGT`` is listed in the config setting ``electricity: extendable_carriers``)
 """

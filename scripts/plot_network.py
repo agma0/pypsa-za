@@ -13,7 +13,7 @@ Description
 -----------
 """
 import logging
-from _helpers import (load_network_for_plots, aggregate_p, aggregate_costs, configure_logging)
+from scripts._helpers import (load_network_for_plots, aggregate_p, aggregate_costs, configure_logging)
 from vresutils import plot as vplot
 
 import pandas as pd
@@ -95,7 +95,7 @@ def plot_map(n, opts, ax=None, attribute='p_nom'):
 
     if attribute == 'p_nom':
         # bus_sizes = n.generators_t.p.sum().loc[n.generators.carrier == "load"].groupby(n.generators.bus).sum()
-        bus_sizes = pd.concat((n.generators[n.get_active_assets('Generator',2040)].query('carrier != "load_shedding"').groupby(['bus', 'carrier']).p_nom_opt.sum(),
+        bus_sizes = pd.concat((n.generators[n.get_active_assets('Generator',2030)].query('carrier != "load_shedding"').groupby(['bus', 'carrier']).p_nom_opt.sum(),
                               n.storage_units.groupby(['bus', 'carrier']).p_nom_opt.sum()))
         line_widths_exp = n.lines.s_nom_opt
         line_widths_cur = n.lines.s_nom_min
@@ -217,7 +217,7 @@ def plot_total_energy_pie(n, opts, ax=None):
 def plot_total_cost_bar(n, opts, ax=None):
     if ax is None: ax = plt.gca()
 
-    total_load = (n.snapshot_weightings.generators.loc[2040] * n.loads_t.p.loc[2040].sum(axis=1)).sum()
+    total_load = (n.snapshot_weightings.generators.loc[2030] * n.loads_t.p.loc[2030].sum(axis=1)).sum()
     tech_colors = opts['tech_colors']
 
     #def split_costs(n):
@@ -238,7 +238,7 @@ def plot_total_cost_bar(n, opts, ax=None):
     costs_marg = variable_cost
 
     costs_graph = pd.DataFrame(
-        dict(a=costs[2040].drop("load_shedding", errors="ignore")),
+        dict(a=costs[2030].drop("load_shedding", errors="ignore")),
         index=[
             'nuclear',
             'coal',
@@ -266,7 +266,7 @@ def plot_total_cost_bar(n, opts, ax=None):
 
         if ind in opts['conv_techs'] + ['AC line']:
             #for c in [costs_cap_ex, costs_marg]:
-            for c in [costs[2040], costs_marg[2040]]:
+            for c in [costs[2030], costs_marg[2030]]:
                 if ind in c:
                     data_sub = np.asarray([c.loc[ind]])/total_load
                     ax.bar([0.5], data_sub, linewidth=0,
@@ -296,7 +296,7 @@ if __name__ == "__main__":
                 'regions':'27-supply',
                 'resarea':'redz',
                 'll':'copt',
-                'opts':'Co2L-2190H',
+                'opts':'Co2L-25sn',
                 'attr':'p_nom',
                 'ext':'pdf'
             }
