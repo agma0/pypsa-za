@@ -331,8 +331,8 @@ def reserves(n, sns):
             exist_capacity=0
             for c in ['Generator','StorageUnit']:
                 non_ext_gen_i = n.df(c).index[
-                    (n.df(c).carrier.isin(res_margin_carriers)) & 
-                    (n.df(c).p_nom_extendable==False) & 
+                    (n.df(c).carrier.isin(res_margin_carriers)) &
+                    (n.df(c).p_nom_extendable==False) &
                     (n.df(c).index.isin(active))
                 ]
                 exist_capacity += (
@@ -540,7 +540,7 @@ def add_operational_reserve_margin_constraint(n, config):
 #     StorageUnit: [battery, PHS]
 
 
-# ZAR 8 billion in 2030 -> Prognosis 2030 Worldbank (2022)
+# ZAR 8 Mrd 2019 bis 2030 / 8 billion ZAR
 max_add_carbon_investment = 8e9
 
 def add_carbontax_contraints(n, year=2030):
@@ -569,6 +569,8 @@ def add_carbontax_contraints(n, year=2030):
 # add new data SACAD/SAPAD? 2022?
 
 # where to provide free solar geysers? -> from household data!
+
+
 def extra_functionality(n, snapshots):
     """
     Collects supplementary constraints which will be passed to ``pypsa.linopf.network_lopf``.
@@ -658,7 +660,7 @@ if __name__ == "__main__":
                 'regions':'27-supply',
                 'resarea':'redz',
                 'll':'copt',
-                'opts':'Co2L-3H',
+                'opts':'Co2L-2190H',
                 'attr':'p_nom'
             }
         )

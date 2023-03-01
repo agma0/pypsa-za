@@ -1,4 +1,5 @@
 import pyomo.environ as pyo
+from pyomo.opt import SolverFactory
 
 model = pyo.ConcreteModel()
 
@@ -10,7 +11,7 @@ model.obj = pyo.Objective(expr=2*model.x + 3*model.y)
 model.con1 = pyo.Constraint(expr=3*model.x + 4*model.y >= 1)
 model.con2 = pyo.Constraint(expr=2*model.x + model.y >= 1)
 
-solver = pyo.SolverFactory('glpk')
+solver = SolverFactory('gurobi')
 
 solver.solve(model)
 
