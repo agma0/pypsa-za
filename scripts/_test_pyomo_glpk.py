@@ -11,7 +11,7 @@ model.obj = pyo.Objective(expr=2*model.x + 3*model.y)
 model.con1 = pyo.Constraint(expr=3*model.x + 4*model.y >= 1)
 model.con2 = pyo.Constraint(expr=2*model.x + model.y >= 1)
 
-solver = SolverFactory('gurobi')
+solver = SolverFactory('cbc')
 
 solver.solve(model)
 
