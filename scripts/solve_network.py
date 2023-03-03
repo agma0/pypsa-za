@@ -1,11 +1,8 @@
 """
 Solves linear optimal power flow for a network iteratively while updating reactances.
-
 Relevant Settings
 -----------------
-
 .. code:: yaml
-
     solving:
         tmpdir:
         options:
@@ -20,51 +17,37 @@ Relevant Settings
             track_iterations:
         solver:
             name:
-
 .. seealso::
     Documentation of the configuration file ``config.yaml`` at
     :ref:`electricity_cf`, :ref:`solving_cf`, :ref:`plotting_cf`
-
 Inputs
 ------
-
 - ``networks/elec_s{simpl}_{clusters}_ec_l{ll}_{opts}.nc``: confer :ref:`prepare`
-
 Outputs
 -------
-
 - ``results/networks/elec_s{simpl}_{clusters}_ec_l{ll}_{opts}.nc``: Solved PyPSA network including optimisation results
-
     .. image:: ../img/results.png
         :scale: 40 %
-
 Description
 -----------
-
 Total annual system costs are minimised with PyPSA. The full formulation of the
 linear optimal power flow (plus investment planning
 is provided in the
 `documentation of PyPSA <https://pypsa.readthedocs.io/en/latest/optimal_power_flow.html#linear-optimal-power-flow>`_.
 The optimization is based on the ``pyomo=False`` setting in the :func:`network.lopf` and  :func:`pypsa.linopf.ilopf` function.
 Additionally, some extra constraints specified in :mod:`prepare_network` are added.
-
 Solving the network in multiple iterations is motivated through the dependence of transmission line capacities and impedances on values of corresponding flows.
 As lines are expanded their electrical parameters change, which renders the optimisation bilinear even if the power flow
 equations are linearized.
 To retain the computational advantage of continuous linear programming, a sequential linear programming technique
 is used, where in between iterations the line impedances are updated.
 Details (and errors made through this heuristic) are discussed in the paper
-
 - Fabian Neumann and Tom Brown. `Heuristics for Transmission Expansion Planning in Low-Carbon Energy System Models <https://arxiv.org/abs/1907.10548>`_), *16th International Conference on the European Energy Market*, 2019. `arXiv:1907.10548 <https://arxiv.org/abs/1907.10548>`_.
-
 .. warning::
     Capital costs of existing network components are not included in the objective function,
     since for the optimisation problem they are just a constant term (no influence on optimal result).
-
     Therefore, these capital costs are not included in ``network.objective``!
-
     If you want to calculate the full total annual system costs add these to the objective value.
-
 .. tip::
     The rule :mod:`solve_all_networks` runs
     for all ``scenario`` s in the configuration file
@@ -371,7 +354,6 @@ def reserves(n, sns):
 def define_storage_global_constraints(n, sns):
     """
     Defines global constraints for the optimization. Possible types are.
-
     4. tech_capacity_expansion_limit - linopf only considers generation - so add in storage
         Use this to se a limit for the summed capacitiy of a carrier (e.g.
         'onwind') for each investment period at choosen nodes. This limit
@@ -540,8 +522,9 @@ def add_operational_reserve_margin_constraint(n, config):
 #     StorageUnit: [battery, PHS]
 
 
-# ZAR 8 Mrd 2019 bis 2030 / 8 billion ZAR
-max_add_carbon_investment = 8e9
+# ZAR 1,4 billion in 2021 with ZAR 122/tCO2e ->1,4e9
+# 8 billion 8e9 bis 2030
+max_add_carbon_investment = 800000000
 
 def add_carbontax_contraints(n, year=2030):
     renewable_carriers = ['solar', 'onwind', 'CSP', 'biomass', 'hydro'] # in config.yaml deklariert #hydroimport???
@@ -594,7 +577,7 @@ def extra_functionality(n, snapshots):
     min_capacity_factor(n,snapshots)
     define_storage_global_constraints(n, snapshots)
     reserves(n,snapshots)
-    #add_carbontax_contraints(n)
+    add_carbontax_contraints(n)
 
 def solve_network(n, config, opts="", **kwargs):
     solver_options = config["solving"]["solver"].copy()
@@ -615,7 +598,7 @@ def solve_network(n, config, opts="", **kwargs):
           carrier_attribute="co2_emissions",
           sense="<=",
           investment_period=2030,
-          constant=96e6)
+          constant=275e6) #max CO2 2030 96e6, IRP 2030 275e6
 
 
     # add to network for extra_functionality
@@ -660,7 +643,7 @@ if __name__ == "__main__":
                 'regions':'27-supply',
                 'resarea':'redz',
                 'll':'copt',
-                'opts':'Co2L-2190H',
+                'opts':'Co2L-3H',
                 'attr':'p_nom'
             }
         )
