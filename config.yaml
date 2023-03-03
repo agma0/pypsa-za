@@ -303,7 +303,7 @@ tsam_clustering:
   hoursPerPeriod: 24
   clusterMethod: 'hierarchical'
   nprocesses: 15
-  solver: 'cbc' #need to use open source solver here due to parallel processing of years
+  solver: 'gurobi' #need to use open source solver here due to parallel processing of years
 
 solving:
   tmpdir: /tmp
@@ -318,7 +318,7 @@ solving:
     # max_iterations: 1
     # nhours: 10
   solver:
-    name: cbc
+    name: gurobi
     # lpflags: 4
     crossover: 0
     # bargapstop: 1.e-5
