@@ -598,7 +598,7 @@ def solve_network(n, config, opts="", **kwargs):
           carrier_attribute="co2_emissions",
           sense="<=",
           investment_period=2030,
-          constant=275e6) #max CO2 2030 96e6, IRP 2030 275e6
+          constant=96e6) #max CO2 2030 96e6, IRP 2030 275e6
 
 
     # add to network for extra_functionality
