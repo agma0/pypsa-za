@@ -527,7 +527,7 @@ def add_operational_reserve_margin_constraint(n, config):
 max_add_carbon_investment = 800000000
 
 def add_carbontax_contraints(n, year=2030):
-    renewable_carriers = ['solar', 'onwind', 'CSP', 'biomass', 'hydro'] # in config.yaml deklariert #hydroimport???
+    renewable_carriers = ['onwind', 'solar', 'CSP', 'biomass', 'hydro'] # in config.yaml deklariert #hydroimport???
     add_generators = n.generators[(n.generators['carrier'].isin(renewable_carriers))
                                   & (n.generators.build_year==year)]
     add_storage_units = n.storage_units[(n.storage_units['carrier'] == 'PHS')
@@ -577,7 +577,7 @@ def extra_functionality(n, snapshots):
     min_capacity_factor(n,snapshots)
     define_storage_global_constraints(n, snapshots)
     reserves(n,snapshots)
-    #add_carbontax_contraints(n)
+    add_carbontax_contraints(n)
 
 def solve_network(n, config, opts="", **kwargs):
     solver_options = config["solving"]["solver"].copy()

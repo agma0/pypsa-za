@@ -292,11 +292,11 @@ if __name__ == "__main__":
         snakemake = mock_snakemake(
             'plot_network', 
             **{
-                'model_file':'val-LC-SMOOTH-2',
+                'model_file':'val-2Gt-UNC',
                 'regions':'27-supply',
                 'resarea':'redz',
                 'll':'copt',
-                'opts':'LC-73H',
+                'opts':'LC-80H',
                 'attr':'p_nom',
                 'ext':'pdf'
             }
