@@ -13,7 +13,7 @@ Description
 -----------
 """
 import logging
-from scripts._helpers import (load_network_for_plots, aggregate_p, aggregate_costs, configure_logging)
+from _helpers import (load_network_for_plots, aggregate_p, aggregate_costs, configure_logging)
 from vresutils import plot as vplot
 
 import pandas as pd
@@ -292,11 +292,11 @@ if __name__ == "__main__":
         snakemake = mock_snakemake(
             'plot_network', 
             **{
-                'model_file':'val-LC-SMOOTH-2',
+                'model_file':'val-2Gt-UNC',
                 'regions':'27-supply',
                 'resarea':'redz',
                 'll':'copt',
-                'opts':'LC-73H',
+                'opts':'LC-1H',
                 'attr':'p_nom',
                 'ext':'pdf'
             }

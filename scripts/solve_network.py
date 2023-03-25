@@ -523,8 +523,10 @@ def add_operational_reserve_margin_constraint(n, config):
 
 
 # ZAR 1,4 billion in 2021 with ZAR 122/tCO2e ->1,4e9
-# 8 billion 8e9 bis 2030
-max_add_carbon_investment = 800000000
+# 8 billion USD 8e9 bis 2030 -> avergae exchange 2022 - 17.673
+# 141.384 1e9 ZAR
+
+max_add_carbon_investment = 141.384e9
 
 def add_carbontax_contraints(n, year=2030):
     renewable_carriers = ['solar', 'onwind', 'CSP', 'biomass', 'hydro'] # in config.yaml deklariert #hydroimport???
@@ -542,7 +544,7 @@ def add_carbontax_contraints(n, year=2030):
     lhs = linexpr((add_generators['capital_cost'], generators_p_nom[add_generators.index])).sum()
     lhs += linexpr((add_storage_units['capital_cost'],stores_p_nom[add_storage_units.index])).sum()
 
-    define_constraints(n, lhs, "<=", max_add_carbon_investment, 'Generator-Storage', 'additional_carbontax_investment')
+    define_constraints(n, lhs, ">=", max_add_carbon_investment, 'Generator-Storage', 'additional_carbontax_investment')
 
 ### ideas
 # define 25% , 50%, 75%, 100% of revenues - show scenarios
@@ -577,7 +579,7 @@ def extra_functionality(n, snapshots):
     min_capacity_factor(n,snapshots)
     define_storage_global_constraints(n, snapshots)
     reserves(n,snapshots)
-    #add_carbontax_contraints(n)
+    add_carbontax_contraints(n)
 
 def solve_network(n, config, opts="", **kwargs):
     solver_options = config["solving"]["solver"].copy()
@@ -598,7 +600,7 @@ def solve_network(n, config, opts="", **kwargs):
           carrier_attribute="co2_emissions",
           sense="<=",
           investment_period=2030,
-          constant=96e6) #max CO2 2030 96e6, IRP 2030 275e6
+          constant=275e6) #max CO2 2030 96e6, IRP 2030 275e6
 
 
     # add to network for extra_functionality
@@ -639,11 +641,11 @@ if __name__ == "__main__":
         snakemake = mock_snakemake(
             'solve_network',
             **{
-                'model_file':'val-LC-UNC',
+                'model_file':'val-2Gt-UNC',
                 'regions':'27-supply',
                 'resarea':'redz',
                 'll':'copt',
-                'opts':'Co2L-3H',
+                'opts':'CO2-1H',
                 'attr':'p_nom'
             }
         )
