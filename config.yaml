@@ -405,6 +405,7 @@ plotting:
     PHS: "Pumped Hydro Storage"
     hydro: "Hydro"
     hydro+PHS: "Hydro+PS"
+    hydro-import: "Hydro import"
     battery: "Battery"
     H2: "Hydrogen Storage"
     lines: "Transmission Lines"
