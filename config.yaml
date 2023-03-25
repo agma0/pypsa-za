@@ -337,7 +337,7 @@ plotting:
   costs_max: 1000
 
   vre_techs: ["onwind","solar", "hydro", "hydro-import"]
-  conv_techs: ["OCGT", "CCGT", "nuclear", "coal"]
+  conv_techs: ["OCGT", "CCGT", "gas", "nuclear", "coal"] #gas added Agatha
   storage_techs: ["hydro", "CAES", "battery", "PHS", "hydro+PHS"]
   store_techs: ["Li ion", "water tanks"]
   load_carriers: ["AC load", "heat load", "Li ion load"]
@@ -373,7 +373,7 @@ plotting:
     "waste": "#68896b"
     "geothermal": "#ba91b1"
     "OCGT": "#8D7867"
-    "gas": "#d35050"
+    "gas": "grey"
     "natural gas": "#d35050"
     "CCGT": "#CCC8C8"
     "nuclear": "#C84936"
@@ -398,6 +398,7 @@ plotting:
   nice_names:
     OCGT: "OCGT" #"Open-Cycle Gas"
     CCGT: "CCGT" #"Combined-Cycle Gas"
+    gas: "Gas" #added Agatha
     offwind-ac: "Offshore Wind (AC)"
     offwind-dc: "Offshore Wind (DC)"
     onwind: "Wind"
