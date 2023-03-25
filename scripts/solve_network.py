@@ -529,7 +529,7 @@ def add_operational_reserve_margin_constraint(n, config):
 max_add_carbon_investment = 141.384e9
 
 def add_carbontax_contraints(n, year=2030):
-    renewable_carriers = ['solar', 'onwind', 'CSP', 'biomass', 'hydro'] # in config.yaml deklariert #hydroimport???
+    renewable_carriers = ['onwind', 'solar', 'CSP', 'biomass', 'hydro'] # in config.yaml deklariert #hydroimport???
     add_generators = n.generators[(n.generators['carrier'].isin(renewable_carriers))
                                   & (n.generators.build_year==year)]
     add_storage_units = n.storage_units[(n.storage_units['carrier'] == 'PHS')

@@ -296,7 +296,7 @@ if __name__ == "__main__":
                 'regions':'27-supply',
                 'resarea':'redz',
                 'll':'copt',
-                'opts':'LC-1H',
+                'opts':'LC-73H',
                 'attr':'p_nom',
                 'ext':'pdf'
             }
