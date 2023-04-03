@@ -110,6 +110,7 @@ def plot_map(n, opts, ax=None, attribute="p_nom"):
 
     if attribute == "p_nom":
         # bus_sizes = n.generators_t.p.sum().loc[n.generators.carrier == "load"].groupby(n.generators.bus).sum()
+        n.generators.loc[n.generators.carrier.isin(["hydro", "hydro-import"]), "carrier"] = "hydro"
         bus_sizes = pd.concat(
             (
                 n.generators.query('carrier != "load_shedding"')
@@ -230,7 +231,7 @@ def plot_map(n, opts, ax=None, attribute="p_nom"):
         bbox_to_anchor=(0.01, 1.01),
         frameon=False,
         labelspacing=1.0,
-        title="Generation",
+        title="Capacity",
         handler_map=make_handler_map_to_scale_circles_as_in(ax),
     )
     ax.add_artist(l2)
@@ -265,7 +266,7 @@ def plot_total_energy_pie(n, opts, ax=None):
     if ax is None:
         ax = plt.gca()
 
-    ax.set_title("Energy per technology", fontdict=dict(fontsize="medium"))
+    ax.set_title("Generation per technology", fontdict=dict(fontsize="medium"))
 
     e_primary = aggregate_p(n).drop("load", errors="ignore").loc[lambda s: s > 0]
 
@@ -304,26 +305,18 @@ def plot_total_cost_bar(n, opts, ax=None):
 
     costs, costs_cap_ex, costs_cap_new, costs_marg = split_costs(n)
 
-    costs_graph = pd.DataFrame(
+    costs_graph2 = pd.DataFrame(
         dict(a=costs.drop("load", errors="ignore")),
         index=[
             "AC-AC",
             "AC line",
-            "onwind",
-            "offwind-ac",
-            "offwind-dc",
-            "solar",
-            "OCGT",
-            "CCGT",
-            "battery",
-            "H2",
         ],
     ).dropna()
     bottom = np.array([0.0, 0.0])
     texts = []
 
-    for i, ind in enumerate(costs_graph.index):
-        data = np.asarray(costs_graph.loc[ind]) / total_load
+    for i, ind in enumerate(costs_graph2.index):
+        data = np.asarray(costs_graph2.loc[ind]) /1e9 #/ total_load
         ax.bar([0.5], data, bottom=bottom, color=tech_colors[ind], width=0.7, zorder=-1)
         bottom_sub = bottom
         bottom = bottom + data
@@ -331,9 +324,63 @@ def plot_total_cost_bar(n, opts, ax=None):
         if ind in opts["conv_techs"] + ["AC line"]:
             for c in [costs_cap_ex, costs_marg]:
                 if ind in c:
-                    data_sub = np.asarray([c.loc[ind]]) / total_load
+                    data_ac = np.asarray([c.loc[ind]]) /1e9 #/ total_load
                     ax.bar(
                         [0.5],
+                        data_ac,
+                        linewidth=0,
+                        bottom=bottom_sub,
+                        color='gray',
+                        width=0.7,
+                        zorder=-1,
+                        alpha=0.8,
+                    )
+                    bottom_sub += data_ac
+
+        if abs(data[-1]) < 5:
+            continue
+
+        text = ax.text(
+            0.5, (bottom + 0.08 * data)[-1] - 3, opts["nice_names"].get(ind, ind), ha='center'
+        )
+        texts.append(text)
+
+
+    costs_graph = pd.DataFrame(
+        dict(a=costs.drop("load", errors="ignore")),
+        index=[
+            "coal",
+            "nuclear",
+            "OCGT",
+            "CCGT",
+            "gas",
+            #"AC-AC",
+            #"AC line",
+            "onwind",
+            "CSP",
+            "solar",
+            "hydro",
+            "hydro-import",
+            "battery",
+            #"H2",
+        ],
+    ).dropna()
+    bottom = np.array([0.0, 0.0])
+    texts = []
+
+
+    for i, ind in enumerate(costs_graph.index):
+        data = np.asarray(costs_graph.loc[ind]) /1e9 #/ total_load
+        ax.bar([1.5], data, bottom=bottom, color=tech_colors[ind], width=0.7, zorder=-1)
+        bottom_sub = bottom
+        bottom = bottom + data
+
+        if ind in opts["conv_techs"] + ["AC line"]:
+            for c in [costs_cap_ex, costs_marg]:
+                if ind in c:
+                    data_sub = np.asarray([c.loc[ind]]) /1e9 #/ total_load
+                    ax.bar(
+                        [1.5],
                         data_sub,
                         linewidth=0,
                         bottom=bottom_sub,
@@ -344,19 +391,21 @@ def plot_total_cost_bar(n, opts, ax=None):
                     )
                     bottom_sub += data_sub
 
+
         if abs(data[-1]) < 5:
             continue
 
         text = ax.text(
-            1.1, (bottom - 0.5 * data)[-1] - 3, opts["nice_names"].get(ind, ind)
+            2, (bottom - 0.5 * data)[-1] - 3, opts["nice_names"].get(ind, ind)
         )
         texts.append(text)
 
-    ax.set_ylabel("Average system cost [Eur/MWh]")
-    ax.set_ylim([0, opts.get("costs_max", 80)])
-    ax.set_xlim([0, 1])
+    ax.set_ylabel("Average system cost [billion ZAR/year]")
+    ax.set_ylim([0, 250]) #opts.get("costs_max", 80)])
+    ax.set_xlim([0, 2])
     ax.set_xticklabels([])
     ax.grid(True, axis="y", color="k", linestyle="dotted")
+
 
 
 if __name__ == "__main__":
@@ -365,13 +414,13 @@ if __name__ == "__main__":
         snakemake = mock_snakemake(
             'plot_network',
             **{
-                'model_file': 'val-2Gt-UNC',
+                'model_file': 'val-2Gt-IRP',
                 'regions': '27-supply',
                 'resarea': 'redz',
                 'll': 'copt',
-                'opts': 'LC-80H',
+                'opts': 'Co2L-1H-8',
                 'attr': 'p_nom',
-                'ext': 'pdf'
+                'ext': 'png'
             }
         )
     configure_logging(snakemake)

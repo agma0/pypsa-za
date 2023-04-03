@@ -526,7 +526,7 @@ def add_operational_reserve_margin_constraint(n, config):
 # 8 billion USD 8e9 bis 2030 -> 2030: 3.19 billion US$ - avergae exchange 2022 - 17.673
 # 56.377 1e9 ZAR
 
-max_add_carbon_investment = 56.377e9
+max_add_carbon_investment = 59.377e9
 
 def add_carbontax_contraints(n, year=2030):
     renewable_carriers = ['onwind', 'solar', 'CSP', 'biomass', 'hydro'] # in config.yaml deklariert #hydroimport???
@@ -544,7 +544,7 @@ def add_carbontax_contraints(n, year=2030):
     lhs = linexpr((add_generators['capital_cost'], generators_p_nom[add_generators.index])).sum()
     lhs += linexpr((add_storage_units['capital_cost'],stores_p_nom[add_storage_units.index])).sum()
 
-    define_constraints(n, lhs, ">=", max_add_carbon_investment, 'Generator-Storage', 'additional_carbontax_investment')
+    define_constraints(n, lhs, ">=", add_carbon_investment, 'Generator-Storage', 'additional_carbontax_investment')
 
 ### ideas
 # define 25% , 50%, 75%, 100% of revenues - show scenarios
