@@ -523,7 +523,7 @@ def add_operational_reserve_margin_constraint(n, config):
 
 
 # ZAR 1,4 billion in 2021 with ZAR 122/tCO2e ->1,4e9
-# 8 billion USD 8e9 bis 2030 -> 2030: 3.19 billion US$ - avergae exchange 2022 - 17.673
+# 8 billion USD 8e9 bis 2030 -> 2030: 3.19 billion US$ - average exchange 2022 - 17.673
 # 56.377 1e9 ZAR
 
 max_add_carbon_investment = 59.377e9
