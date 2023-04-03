@@ -523,10 +523,10 @@ def add_operational_reserve_margin_constraint(n, config):
 
 
 # ZAR 1,4 billion in 2021 with ZAR 122/tCO2e ->1,4e9
-# 8 billion USD 8e9 bis 2030 -> avergae exchange 2022 - 17.673
-# 141.384 1e9 ZAR
+# 8 billion USD 8e9 bis 2030 -> 2030: 3.19 billion US$ - avergae exchange 2022 - 17.673
+# 56.377 1e9 ZAR
 
-max_add_carbon_investment = 141.384e9
+max_add_carbon_investment = 56.377e9
 
 def add_carbontax_contraints(n, year=2030):
     renewable_carriers = ['onwind', 'solar', 'CSP', 'biomass', 'hydro'] # in config.yaml deklariert #hydroimport???
@@ -600,7 +600,7 @@ def solve_network(n, config, opts="", **kwargs):
           carrier_attribute="co2_emissions",
           sense="<=",
           investment_period=2030,
-          constant=275e6) #max CO2 2030 96e6, IRP 2030 275e6
+          constant=275e6) #max CO2 2030 100e6, IRP 2030 275e6
 
 
     # add to network for extra_functionality
