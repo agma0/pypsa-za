@@ -544,16 +544,7 @@ def add_carbontax_contraints(n, year=2030):
     lhs = linexpr((add_generators['capital_cost'], generators_p_nom[add_generators.index])).sum()
     lhs += linexpr((add_storage_units['capital_cost'],stores_p_nom[add_storage_units.index])).sum()
 
-    define_constraints(n, lhs, ">=", add_carbon_investment, 'Generator-Storage', 'additional_carbontax_investment')
-
-### ideas
-# define 25% , 50%, 75%, 100% of revenues - show scenarios
-# climate goals 2030 - 400 MtCO2e ? -> change CO2 limit in config.yaml line 69
-# end load shedding? changes in loadshedding (2030) if revenues are invested in RE?
-
-# add new data SACAD/SAPAD? 2022?
-
-# where to provide free solar geysers? -> from household data!
+    define_constraints(n, lhs, ">=", max_add_carbon_investment, 'Generator-Storage', 'additional_carbontax_investment')
 
 
 def extra_functionality(n, snapshots):
@@ -579,7 +570,7 @@ def extra_functionality(n, snapshots):
     min_capacity_factor(n,snapshots)
     define_storage_global_constraints(n, snapshots)
     reserves(n,snapshots)
-    add_carbontax_contraints(n)
+    #add_carbontax_contraints(n)
 
 def solve_network(n, config, opts="", **kwargs):
     solver_options = config["solving"]["solver"].copy()
