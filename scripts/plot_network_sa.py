@@ -425,7 +425,7 @@ if __name__ == "__main__":
                 'regions': '27-supply',
                 'resarea': 'redz',
                 'll': 'copt',
-                'opts': 'Co2L-1H-59',
+                'opts': 'Co2L-1H_base',
                 'attr': 'p_nom',
                 'ext': 'png'
             }
