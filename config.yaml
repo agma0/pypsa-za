@@ -289,12 +289,12 @@ costs:
     "discount rate": 0.082
 
   emission_prices: # only used with the option Ep (emission prices)
-    # Externality costs from Integrated Energy Plan by the ZA DOE
-    co2: 0.27e+3
-    sox: 7.6e+3
-    nox: 4.5e+3
-    hg: 41484.e-6 # is also part of the excel sheet
-    particulate: 11.3e+3
+    # Externality costs from Integrated Energy Plan by the ZA DOE in ZAR/t
+    co2: 530.19 #0.27e+3 -> 30 USD/tCO2 * 17.673 ZAR/USD = 530.19 ZAR/tCO2
+    sox: 0.0 #7.6e+3
+    nox: 0.0 #4.5e+3
+    hg: 0.0. #41484.e-6 # is also part of the excel sheet
+    particulate: 0.0 #11.3e+3
 
 tsam_clustering:
   normed: true
