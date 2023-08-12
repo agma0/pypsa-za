@@ -562,12 +562,7 @@ def add_carbontax_contraints2(n, year=2030):
     stores_p_nom = get_var(n, "StorageUnit", "p_nom")
     lhs = linexpr((add_generators['capital_cost'] * add_generators['lifetime'], generators_p_nom[add_generators.index])).sum()
     lhs += linexpr((add_storage_units['capital_cost'] * add_storage_units['lifetime'], stores_p_nom[add_storage_units.index])).sum()
-    generators_p_nom = get_var(n, "Generator", "p_nom")
-    stores_p_nom = get_var(n, "StorageUnit", "p_nom")
-    lhs = linexpr((add_generators['capital_cost'] * add_generators['lifetime'], generators_p_nom[add_generators.index])).sum()
-    lhs += linexpr((add_storage_units['capital_cost'] * add_storage_units['lifetime'], stores_p_nom[add_storage_units.index])).sum()
 
-    define_constraints(n, lhs, "<=", max_add_carbon_investment, 'Generator-Storage', 'additional_carbontax_investment')
     define_constraints(n, lhs, "<=", max_add_carbon_investment, 'Generator-Storage', 'additional_carbontax_investment')
 
 
