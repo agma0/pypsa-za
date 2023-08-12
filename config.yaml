@@ -288,6 +288,7 @@ costs:
     "CO2 intensity": 0
     "discount rate": 0.082
 
+
   emission_prices: # only used with the option Ep (emission prices)
     # Externality costs from Integrated Energy Plan by the ZA DOE in ZAR/t
     co2: 530.19 #0.27e+3 -> 30 USD/tCO2 * 17.673 ZAR/USD = 530.19 ZAR/tCO2

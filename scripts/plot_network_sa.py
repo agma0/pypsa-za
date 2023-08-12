@@ -316,7 +316,7 @@ def plot_total_cost_bar(n, opts, ax=None):
     texts = []
 
     for i, ind in enumerate(costs_graph2.index):
-        data = np.asarray(costs_graph2.loc[ind]) /1e9 #/ total_load
+        data = np.asarray(costs_graph2.loc[ind]) /1e9 /17.673 #USD #/ total_load
         ax.bar([0.5], data, bottom=bottom, color=tech_colors[ind], width=0.7, zorder=-1)
         bottom_sub = bottom
         bottom = bottom + data
@@ -324,7 +324,7 @@ def plot_total_cost_bar(n, opts, ax=None):
         if ind in opts["conv_techs"] + ["AC line"]:
             for c in [costs_cap_ex, costs_marg]:
                 if ind in c:
-                    data_ac = np.asarray([c.loc[ind]]) /1e9 #/ total_load
+                    data_ac = np.asarray([c.loc[ind]]) /1e9 /17.673 #USD#/ total_load
                     ax.bar(
                         [0.5],
                         data_ac,
@@ -370,7 +370,7 @@ def plot_total_cost_bar(n, opts, ax=None):
 
 
     for i, ind in enumerate(costs_graph.index):
-        data = np.asarray(costs_graph.loc[ind]) /1e9 #/ total_load
+        data = np.asarray(costs_graph.loc[ind]) /1e9 /17.673 #USD 2022 #/ total_load
         ax.bar([1.5], data, bottom=bottom, color=tech_colors[ind], width=0.7, zorder=-1)
         bottom_sub = bottom
         bottom = bottom + data
@@ -378,7 +378,7 @@ def plot_total_cost_bar(n, opts, ax=None):
         if ind in opts["conv_techs"] + ["AC line"]:
             for c in [costs_cap_ex, costs_marg]:
                 if ind in c:
-                    data_sub = np.asarray([c.loc[ind]]) /1e9 #/ total_load
+                    data_sub = np.asarray([c.loc[ind]]) /1e9 /17.673 #USD #/ total_load
                     ax.bar(
                         [1.5],
                         data_sub,
@@ -392,16 +392,23 @@ def plot_total_cost_bar(n, opts, ax=None):
                     bottom_sub += data_sub
 
 
-        if abs(data[-1]) < 5:
+        if abs(data[-1]) < 0.25:
             continue
 
+        # Adjust the y position based on half the height of the data bar
+        y_position = (bottom - 0.5 * data)[-1]
+
+        # Check if it's the first carrier and adjust the y position accordingly
+        if i == 0:
+            y_position = (0.5 * data)[-1]
+
         text = ax.text(
-            2, (bottom - 0.5 * data)[-1] - 3, opts["nice_names"].get(ind, ind)
+            2, y_position, opts["nice_names"].get(ind, ind)
         )
         texts.append(text)
 
-    ax.set_ylabel("Average system cost [billion ZAR/year]")
-    ax.set_ylim([0, 250]) #opts.get("costs_max", 80)])
+    ax.set_ylabel("Average system cost [billion US$/year]")
+    ax.set_ylim([0, 14]) #opts.get("costs_max", 80)])
     ax.set_xlim([0, 2])
     ax.set_xticklabels([])
     ax.grid(True, axis="y", color="k", linestyle="dotted")
@@ -418,7 +425,7 @@ if __name__ == "__main__":
                 'regions': '27-supply',
                 'resarea': 'redz',
                 'll': 'copt',
-                'opts': 'Co2L-1H-8',
+                'opts': 'Co2L-1H_base',
                 'attr': 'p_nom',
                 'ext': 'png'
             }
