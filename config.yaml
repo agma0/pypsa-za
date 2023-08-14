@@ -24,7 +24,7 @@ scenario:
   regions: [27-supply]
   ll: ['copt']
   model_file: ['val-LC-IRP']
-  opts: [LC-2190H, Co2L-2190H]
+  opts: [LC-2190H, Co2L-2190H, Co2L-Ep-25sn]
 
 # General inputs
 data:

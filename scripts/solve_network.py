@@ -563,7 +563,7 @@ def add_carbontax_contraints2(n, year=2030):
     lhs = linexpr((add_generators['capital_cost'] * add_generators['lifetime'], generators_p_nom[add_generators.index])).sum()
     lhs += linexpr((add_storage_units['capital_cost'] * add_storage_units['lifetime'], stores_p_nom[add_storage_units.index])).sum()
 
-    define_constraints(n, lhs, "<=", max_add_carbon_investment, 'Generator-Storage', 'additional_carbontax_investment')
+    define_constraints(n, lhs, ">=", max_add_carbon_investment, 'Generator-Storage', 'additional_carbontax_investment')
 
 
 def extra_functionality(n, snapshots):
@@ -589,8 +589,8 @@ def extra_functionality(n, snapshots):
     min_capacity_factor(n,snapshots)
     define_storage_global_constraints(n, snapshots)
     reserves(n,snapshots)
-    add_carbontax_contraints2(n)
-    add_carbontax_contraints2(n)
+    #add_carbontax_contraints(n)
+    #add_carbontax_contraints2(n)
 
 def solve_network(n, config, opts="", **kwargs):
     solver_options = config["solving"]["solver"].copy()
