@@ -616,8 +616,9 @@ def extra_functionality(n, snapshots):
     min_capacity_factor(n,snapshots)
     define_storage_global_constraints(n, snapshots)
     reserves(n,snapshots)
-    add_carbontax_contraints3(n)
+    #add_carbontax_contraints(n)
     #add_carbontax_contraints2(n)
+    #add_carbontax_contraints3(n)
 
 def solve_network(n, config, opts="", **kwargs):
     solver_options = config["solving"]["solver"].copy()
