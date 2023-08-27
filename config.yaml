@@ -262,7 +262,7 @@ augmented_line_connection:
 
 
 costs:
-  # costs come from data/technology_costs.xlsx
+  # costs come from data/technology_costs.xlsx ### no from model_file
   discountrate: 0.082
   year: 2030
   # Marginal and capital costs can be overwritten

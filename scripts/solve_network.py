@@ -515,7 +515,7 @@ def add_operational_reserve_margin_constraint(n, config):
 # 8 billion USD 8e9 bis 2030 -> 2030: 3.19 billion US$ - average exchange 2022 - 17.673
 # 56.377 1e9 ZAR
 
-max_add_carbon_investment = 59.377e9
+max_add_carbon_investment = 56.377e9 #+base capcost*lifetime = invest
 
 def add_carbontax_contraints(n, year=2030):
     renewable_carriers = ['onwind', 'solar', 'CSP', 'biomass', 'hydro']
@@ -540,7 +540,7 @@ def add_carbontax_contraints(n, year=2030):
 
 def add_carbontax_contraints2(n, year=2030):
     lifetime_dict = {'onwind': 20, 'solar': 25, 'CSP': 30, 'biomass': 30, 'hydro': 80, 'PHS': 80}
-    discountrate = 0.082
+    discountrate = 0.082 #löschen!
     renewable_carriers = ['onwind', 'solar', 'CSP', 'biomass', 'hydro']
 
     add_generators = n.generators[(n.generators['carrier'].isin(renewable_carriers))
