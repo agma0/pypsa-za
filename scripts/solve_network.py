@@ -515,8 +515,12 @@ def add_operational_reserve_margin_constraint(n, config):
 # 8 billion USD 8e9 bis 2030 -> 2030: 3.19 billion US$ - average exchange 2022 - 17.673
 # 56.377 1e9 ZAR
 
-max_add_carbon_investment = 56.377e9 #+base capcost*lifetime = invest
+carbon_investment = 56.377e9 #+base capcost*lifetime = invest
+#onwind= 300.61e6, solar=651.90e6, CSP=356.46e6, biomass=109.11e6, hydro=0, PHS=230.58e6 -> 
+rebase_investment = 29.119e9 # from base model capital costs of renewables 1647.66e6 ZAR / 17.673ZAR/USD
+total_investment = carbon_investment + rebase_investment
 
+# from MA - annualized investment
 def add_carbontax_contraints(n, year=2030):
     renewable_carriers = ['onwind', 'solar', 'CSP', 'biomass', 'hydro']
     add_generators = n.generators[(n.generators['carrier'].isin(renewable_carriers))
@@ -533,63 +537,72 @@ def add_carbontax_contraints(n, year=2030):
     lhs = linexpr((add_generators['capital_cost'], generators_p_nom[add_generators.index])).sum()
     lhs += linexpr((add_storage_units['capital_cost'],stores_p_nom[add_storage_units.index])).sum()
 
-    define_constraints(n, lhs, ">=", max_add_carbon_investment, 'Generator-Storage', 'additional_carbontax_investment')
+    define_constraints(n, lhs, ">=", carbon_investment, 'Generator-Storage', 'additional_carbontax_investment')
+
+### new constraint - total investment of carbon tax revenues in 2030 into renewables
+def add_carbontax_contraints1(n, year=2030):
+    invest_dict = {'onwind': 12708, 'solar': 8619, 'CSP': 0, 'biomass': 20232.73107, 'hydro': 2000, 'PHS': 2000} # ZAR/kWel
+    renewable_carriers = ['onwind', 'solar', 'CSP', 'biomass', 'hydro']
+
+    add_generators = n.generators[(n.generators['carrier'].isin(renewable_carriers))
+                                  & (n.generators.build_year==year)]
+    add_storage_units = n.storage_units[(n.storage_units['carrier'] == 'PHS')
+                                        & (n.storage_units.build_year==year)]
+    
+    add_generators['investment_cost'] = add_generators['carrier'].map(invest_dict) /1000 #ZAR/MW
+    add_storage_units['investment_cost'] = add_storage_units['carrier'].map(invest_dict) /1000
+
+    if add_generators.empty and add_storage_units.empty or ('Generator', 'p_nom') not in n.variables.index:
+        return
+
+    generators_p_nom = get_var(n, "Generator", "p_nom")
+    stores_p_nom = get_var(n, "StorageUnit", "p_nom")
+
+    lhs = linexpr((add_generators['investment_cost'], generators_p_nom[add_generators.index])).sum()
+    lhs += linexpr((add_storage_units['investment_cost'],stores_p_nom[add_storage_units.index])).sum()
+
+    define_constraints(n, lhs, ">=", total_investment, 'Generator-Storage', 'additional_carbontax_investment')
+
 
 ###
-# How much would we need to invest in 2030 to cover all the future costs of the assets? (over lifetime including discountrate)
+# How much would we need to invest in 2030 to cover all the future costs of the assets? (over lifetime)
 
-def add_carbontax_contraints2(n, year=2030):
-    lifetime_dict = {'onwind': 20, 'solar': 25, 'CSP': 30, 'biomass': 30, 'hydro': 80, 'PHS': 80}
-    discountrate = 0.082 #löschen!
-    renewable_carriers = ['onwind', 'solar', 'CSP', 'biomass', 'hydro']
+# def add_carbontax_contraints2(n, year=2030):
+#     invest_dict = {'onwind': 12708, 'solar': 8619, 'CSP': 0, 'biomass': 20232.73107, 'hydro': 2000, 'PHS': 2000} # ZAR/kWh
+#     renewable_carriers = ['onwind', 'solar', 'CSP', 'biomass', 'hydro']
 
-    add_generators = n.generators[(n.generators['carrier'].isin(renewable_carriers))
-                                  & (n.generators.build_year == year)]
-    add_storage_units = n.storage_units[(n.storage_units['carrier'] == 'PHS')
-                                        & (n.storage_units.build_year == year)]
+#     add_generators = n.generators[(n.generators['carrier'].isin(renewable_carriers)) & (n.generators.build_year == year)]
+#     add_storage_units = n.storage_units[(n.storage_units['carrier'] == 'PHS') & (n.storage_units.build_year == year)]
 
-    add_generators['discounted_cost'] = add_generators.apply(lambda row: row['capital_cost'] / (1 + discountrate) ** lifetime_dict[row['carrier']], axis=1)
-    add_storage_units['discounted_cost'] = add_storage_units.apply(lambda row: row['capital_cost'] / (1 + discountrate) ** lifetime_dict[row['carrier']], axis=1)
+#     if add_generators.empty and add_storage_units.empty or ('Generator', 'p_nom') not in n.variables.index:
+#         return
 
-    n.generators.loc[add_generators.index, 'capital_cost'] = add_generators['discounted_cost']
-    n.storage_units.loc[add_storage_units.index, 'capital_cost'] = add_storage_units['discounted_cost']
+#     generators_p_nom = get_var(n, "Generator", "p_nom")
+#     stores_p_nom = get_var(n, "StorageUnit", "p_nom")
+#     lhs = linexpr((invest_dict[gen.carrier], generators_p_nom[gen.name]) for gen in add_generators.itertuples()).sum()
+#     lhs += linexpr((invest_dict[su.carrier], stores_p_nom[su.name]) for su in add_storage_units.itertuples()).sum()
 
-    if add_generators.empty and add_storage_units.empty or ('Generator', 'p_nom') not in n.variables.index:
-        return
+#     define_constraints(n, lhs, ">=", total_investment, 'Generator-Storage', 'additional_carbontax_investment')
 
-    generators_p_nom = get_var(n, "Generator", "p_nom")
-    stores_p_nom = get_var(n, "StorageUnit", "p_nom")
-    lhs = linexpr((add_generators['capital_cost'], generators_p_nom[add_generators.index])).sum()
-    lhs += linexpr((add_storage_units['capital_cost'], stores_p_nom[add_storage_units.index])).sum()
+# def add_carbontax_constraints3(n, year=2030):
+#     invest_dict = {'onwind': 12708, 'solar': 8619, 'CSP': 0, 'biomass': 20232.73107, 'hydro': 2000, 'PHS': 2000}  # ZAR/kWh
+#     renewable_carriers = ['onwind', 'solar', 'CSP', 'biomass', 'hydro']
 
-    define_constraints(n, lhs, ">=", max_add_carbon_investment, 'Generator-Storage', 'additional_carbontax_investment')
-# Ergebnisse wie constraint zeile 520 - cap. costs gleich?
+#     add_generators = n.generators[(n.generators['carrier'].isin(renewable_carriers)) & (n.generators.build_year == year)]
+#     add_storage_units = n.storage_units[(n.storage_units['carrier'] == 'PHS') & (n.storage_units.build_year == year)]
 
-#
-def add_carbontax_contraints3(n, year=2030):
-    lifetime_dict = {'onwind': 20, 'solar': 25, 'CSP': 30, 'biomass': 30, 'hydro': 80, 'PHS': 80}
-    discountrate = 0.082
-    renewable_carriers = ['onwind', 'solar', 'CSP', 'biomass', 'hydro']
+#     if add_generators.empty and add_storage_units.empty or ('Generator', 'p_nom') not in n.variables.index:
+#         return
 
-    add_generators = n.generators[(n.generators['carrier'].isin(renewable_carriers))
-                                  & (n.generators.build_year == year)]
-    add_storage_units = n.storage_units[(n.storage_units['carrier'] == 'PHS')
-                                        & (n.storage_units.build_year == year)]
+#     generators_p_nom = get_var(n, "Generator", "p_nom")
+#     storage_p_nom = get_var(n, "StorageUnit", "p_nom")
 
-    if add_generators.empty and add_storage_units.empty or ('Generator', 'p_nom') not in n.variables.index:
-        return
+#     lhs_gen = sum(invest_dict[gen.carrier] * generators_p_nom.at[gen.name] for _, gen in add_generators.iterrows())
+#     lhs_storage = sum(invest_dict[su.carrier] * storage_p_nom.at[su.name] for _, su in add_storage_units.iterrows())
 
-    generators_p_nom = get_var(n, "Generator", "p_nom")
-    stores_p_nom = get_var(n, "StorageUnit", "p_nom")
+#     lhs = lhs_gen + lhs_storage
 
-    add_g = add_generators.apply(lambda row: row['capital_cost'] / (1 + discountrate) ** lifetime_dict[row['carrier']], axis=1)
-    add_s = add_storage_units.apply(lambda row: row['capital_cost'] / (1 + discountrate) ** lifetime_dict[row['carrier']], axis=1)
-
-    lhs = linexpr((add_g, generators_p_nom[add_generators.index])).sum()
-    lhs += linexpr((add_s, stores_p_nom[add_storage_units.index])).sum()
-
-    define_constraints(n, lhs, "<=", max_add_carbon_investment, 'Generator-Storage', 'additional_carbontax_investment')
-    # umgedreht weil rhs größer - Ergebnisse wie base scenario ansonsten unbound model
+#     define_constraints(n, lhs, ">=", total_investment, 'Generator-Storage', 'additional_carbontax_investment')
 
 
 
@@ -616,9 +629,9 @@ def extra_functionality(n, snapshots):
     min_capacity_factor(n,snapshots)
     define_storage_global_constraints(n, snapshots)
     reserves(n,snapshots)
-    #add_carbontax_contraints(n)
-    #add_carbontax_contraints2(n)
-    #add_carbontax_contraints3(n)
+    add_carbontax_contraints1(n)
+    #add_carbontax_constraints3(n)
+
 
 def solve_network(n, config, opts="", **kwargs):
     solver_options = config["solving"]["solver"].copy()
@@ -680,11 +693,11 @@ if __name__ == "__main__":
         snakemake = mock_snakemake(
             'solve_network',
             **{
-                'model_file':'val-2Gt-UNC',
+                'model_file':'val-2Gt-IRP',
                 'regions':'27-supply',
                 'resarea':'redz',
                 'll':'copt',
-                'opts':'CO2-1H',
+                'opts':'Co2-2190H',
                 'attr':'p_nom'
             }
         )
