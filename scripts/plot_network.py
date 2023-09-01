@@ -13,7 +13,7 @@ Description
 -----------
 """
 import logging
-from scripts._helpers import (load_network_for_plots, aggregate_p, aggregate_costs, configure_logging)
+from _helpers import (load_network_for_plots, aggregate_p, aggregate_costs, configure_logging)
 from vresutils import plot as vplot
 
 import pandas as pd
@@ -296,7 +296,7 @@ if __name__ == "__main__":
                 'regions':'27-supply',
                 'resarea':'redz',
                 'll':'copt',
-                'opts':'LC-80H',
+                'opts':'LC-73H',
                 'attr':'p_nom',
                 'ext':'pdf'
             }
