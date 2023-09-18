@@ -110,6 +110,7 @@ def plot_map(n, opts, ax=None, attribute="p_nom"):
 
     if attribute == "p_nom":
         # bus_sizes = n.generators_t.p.sum().loc[n.generators.carrier == "load"].groupby(n.generators.bus).sum()
+        n.generators.loc[n.generators.carrier.isin(["OCGT", "CCGT"]), "carrier"] = "gas"
         n.generators.loc[n.generators.carrier.isin(["hydro", "hydro-import"]), "carrier"] = "hydro"
         bus_sizes = pd.concat(
             (
@@ -148,8 +149,8 @@ def plot_map(n, opts, ax=None, attribute="p_nom"):
     n.plot(
         line_widths=line_widths_exp / linewidth_factor,
         link_widths=link_widths_exp / linewidth_factor,
-        line_colors=line_colors["exp"],
-        link_colors=line_colors["exp"],
+        line_colors=line_colors["cur"],
+        link_colors=line_colors["cur"],
         bus_sizes=bus_sizes / bus_size_factor,
         bus_colors=tech_colors,
         boundaries=map_boundaries,
@@ -183,7 +184,7 @@ def plot_map(n, opts, ax=None, attribute="p_nom"):
     for s in (10, 1):
         handles.append(
             plt.Line2D(
-                [0], [0], color=line_colors["exp"], linewidth=s * 1e3 / linewidth_factor
+                [0], [0], color=line_colors["cur"], linewidth=s * 1e3 / linewidth_factor
             )
         )
         labels.append("{} GW".format(s))
@@ -195,7 +196,7 @@ def plot_map(n, opts, ax=None, attribute="p_nom"):
         frameon=False,
         labelspacing=0.8,
         handletextpad=1.5,
-        title="Transmission Exp./Exist.             ",
+        title="Transmission",
     )
     ax.add_artist(l1_1)
 
@@ -207,18 +208,18 @@ def plot_map(n, opts, ax=None, attribute="p_nom"):
                 [0], [0], color=line_colors["cur"], linewidth=s * 1e3 / linewidth_factor
             )
         )
-        labels.append("/")
-    l1_2 = ax.legend(
-        handles,
-        labels,
-        loc="upper left",
-        bbox_to_anchor=(0.26, 1.01),
-        frameon=False,
-        labelspacing=0.8,
-        handletextpad=0.5,
-        title=" ",
-    )
-    ax.add_artist(l1_2)
+        #labels.append("/")
+#    l1_2 = ax.legend(
+#        handles,
+#        labels,
+#        loc="upper left",
+#        bbox_to_anchor=(0.26, 1.01),
+#        frameon=False,
+#        labelspacing=0.8,
+#        handletextpad=0.5,
+#        title=" ",
+#    )
+#    ax.add_artist(l1_2)
 
     handles = make_legend_circles_for(
         [10e3, 5e3, 1e3], scale=bus_size_factor, facecolor="w"
@@ -408,7 +409,7 @@ def plot_total_cost_bar(n, opts, ax=None):
         texts.append(text)
 
     ax.set_ylabel("Average system cost [billion US$/year]")
-    ax.set_ylim([0, 14]) #opts.get("costs_max", 80)])
+    ax.set_ylim([0, 15]) #opts.get("costs_max", 80)])
     ax.set_xlim([0, 2])
     ax.set_xticklabels([])
     ax.grid(True, axis="y", color="k", linestyle="dotted")
