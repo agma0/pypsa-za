@@ -630,7 +630,7 @@ def extra_functionality(n, snapshots):
     define_storage_global_constraints(n, snapshots)
     reserves(n,snapshots)
     add_carbontax_contraints1(n)
-    #add_carbontax_constraints3(n)
+
 
 
 def solve_network(n, config, opts="", **kwargs):
