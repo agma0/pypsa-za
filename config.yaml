@@ -274,7 +274,7 @@ costs:
     #offwind: 0.015
     #PV: 0.01
     #Wind: 0.015
-  USD_to_ZAR: 18.24
+  USD_to_ZAR: 18.24 # not used - 17.673 manually in Jupyter
   EUR_to_ZAR: 17.83
 
   load_shedding: 100000 #R100/kWh
