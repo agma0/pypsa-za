@@ -699,15 +699,6 @@ def add_co2limit(n):
     #     ep = (pd.Series(emission_prices).rename(lambda x: x+'_emissions') * n.carriers).sum(axis=1)
     #     n.generators['marginal_cost'] += n.generators.carrier.map(ep)
     #     n.storage_units['marginal_cost'] += n.storage_units.carrier.map(ep)
-
-def add_emission_prices(n, emission_prices=None, exclude_co2=False):
-    if emission_prices is None:
-        emission_prices = snakemake.config['costs']['emission_prices']
-    if exclude_co2: 
-        emission_prices.pop('co2')
-    ep = (pd.Series(emission_prices).rename(lambda x: x+'_emissions') * n.carriers).sum(axis=1)
-    n.generators['marginal_cost'] += n.generators.carrier.map(ep)
-    n.storage_units['marginal_cost'] += n.storage_units.carrier.map(ep)
     
 
 
