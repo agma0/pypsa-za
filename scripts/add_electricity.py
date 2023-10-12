@@ -691,7 +691,7 @@ def add_co2limit(n):
           carrier_attribute="co2_emissions", sense="<=",
           constant=snakemake.config['electricity']['co2limit'])
     
-
+# already in prepare_network
     # def add_emission_prices(n, emission_prices=None, exclude_co2=False):
     #     if emission_prices is None:
     #         emission_prices = snakemake.config['costs']['emission_prices']
