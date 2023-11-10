@@ -1735,3 +1735,17 @@ Set parameter Username
 Set parameter LogFile to value "gurobi.log"
 Academic license - for non-commercial use only - expires 2024-03-03
 Using license file /home/users/a/agma/gurobi.lic
+
+Gurobi 10.0.1 (linux64, gurobi_cl) logging started Fri Nov 10 21:31:44 2023
+
+Set parameter Username
+Set parameter LogFile to value "gurobi.log"
+Academic license - for non-commercial use only - expires 2024-03-03
+Using license file /home/users/a/agma/gurobi.lic
+
+Gurobi 10.0.1 (linux64, gurobi_cl) logging started Fri Nov 10 21:40:46 2023
+
+Set parameter Username
+Set parameter LogFile to value "gurobi.log"
+Academic license - for non-commercial use only - expires 2024-03-03
+Using license file /home/users/a/agma/gurobi.lic
