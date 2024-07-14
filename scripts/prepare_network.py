@@ -183,10 +183,15 @@ def add_gaslimit(n, gaslimit):
     )
 
 
-
+# Only here not in add_electrcity
 def add_emission_prices(n, emission_prices={"co2": 0.0}, exclude_co2=False):
     if exclude_co2:
         emission_prices.pop("co2")
+
+    # Set the marginal costs of solar and wind
+    n.generators.loc[n.generators.carrier == 'solar', 'marginal_cost'] = 0.01
+    n.generators.loc[n.generators.carrier == 'onwind', 'marginal_cost'] = 0.015
+
     ep = (
         pd.Series(emission_prices).rename(lambda x: x + "_emissions")
         * n.carriers.filter(like="_emissions")

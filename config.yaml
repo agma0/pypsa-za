@@ -24,7 +24,7 @@ scenario:
   regions: [27-supply]
   ll: ['copt']
   model_file: ['val-LC-IRP']
-  opts: [LC-2190H, Co2L-2190H]
+  opts: [LC-2190H, Co2L-2190H, Co2L-Ep-25sn]
 
 # General inputs
 data:
@@ -262,7 +262,7 @@ augmented_line_connection:
 
 
 costs:
-  # costs come from data/technology_costs.xlsx
+  # costs come from data/technology_costs.xlsx ### no from model_file
   discountrate: 0.082
   year: 2030
   # Marginal and capital costs can be overwritten
@@ -288,13 +288,23 @@ costs:
     "CO2 intensity": 0
     "discount rate": 0.082
 
+
   emission_prices: # only used with the option Ep (emission prices)
+<<<<<<< HEAD
     # Externality costs from Integrated Energy Plan by the ZA DOE in R/t
     co2: 530.19 #0.27e+3
     sox: 0 #7.6e+3
     nox: 0 #4.5e+3
     hg: 0 #41484.e-6 # is also part of the excel sheet
     particulate: 0 #11.3e+3
+=======
+    # Externality costs from Integrated Energy Plan by the ZA DOE in ZAR/t
+    co2: 530.19 #0.27e+3 -> 30 USD/tCO2 * 17.673 ZAR/USD = 530.19 ZAR/tCO2
+    sox: 0.0 #7.6e+3
+    nox: 0.0 #4.5e+3
+    hg: 0.0. #41484.e-6 # is also part of the excel sheet
+    particulate: 0.0 #11.3e+3
+>>>>>>> 837b413abbe71e2ec8092ee04261ac6966eeb173
 
 tsam_clustering:
   normed: true
@@ -336,8 +346,13 @@ plotting:
 
   costs_max: 1000
 
+<<<<<<< HEAD
   vre_techs: ["onwind","solar", "CSP", "hydro", "hydro-import"]
   conv_techs: ["OCGT", "CCGT", "gas", "nuclear", "coal"] #gas CSP added Agatha
+=======
+  vre_techs: ["onwind","solar", "hydro", "hydro-import"]
+  conv_techs: ["OCGT", "CCGT", "gas", "nuclear", "coal"] #added gas agatha
+>>>>>>> 837b413abbe71e2ec8092ee04261ac6966eeb173
   storage_techs: ["hydro", "CAES", "battery", "PHS", "hydro+PHS"]
   store_techs: ["Li ion", "water tanks"]
   load_carriers: ["AC load", "heat load", "Li ion load"]
@@ -373,7 +388,11 @@ plotting:
     "waste": "#68896b"
     "geothermal": "#ba91b1"
     "OCGT": "#8D7867"
+<<<<<<< HEAD
     "gas": "grey"
+=======
+    "gas": "grey" #changed color
+>>>>>>> 837b413abbe71e2ec8092ee04261ac6966eeb173
     "natural gas": "#d35050"
     "CCGT": "#CCC8C8"
     "nuclear": "#C84936"
@@ -398,8 +417,12 @@ plotting:
   nice_names:
     OCGT: "OCGT" #"Open-Cycle Gas"
     CCGT: "CCGT" #"Combined-Cycle Gas"
+<<<<<<< HEAD
     gas: "Gas" #added Agatha
     CSP: "CSP" #added
+=======
+    gas: "Gas" # added gas
+>>>>>>> 837b413abbe71e2ec8092ee04261ac6966eeb173
     offwind-ac: "Offshore Wind (AC)"
     offwind-dc: "Offshore Wind (DC)"
     onwind: "Wind"
@@ -407,6 +430,7 @@ plotting:
     PHS: "Pumped Hydro Storage"
     hydro: "Hydro"
     hydro+PHS: "Hydro+PS"
+    hydro-import: "Hydro import"
     battery: "Battery"
     H2: "Hydrogen Storage"
     lines: "Transmission Lines"

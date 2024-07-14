@@ -670,7 +670,7 @@ def solve_network(n, config, opts="",additional_investment=0, base_investment=0,
           carrier_attribute="co2_emissions",
           sense="<=",
           investment_period=2030,
-          constant=275e6)  # max CO2 2030 96e6, IRP 2030 275e6
+          constant=275e6) #max CO2 2030 100e6, IRP 2030 275e6
 
     # n.add("GlobalConstraint",
     #       "CO2Limit2030",
@@ -732,11 +732,11 @@ if __name__ == "__main__":
         snakemake = mock_snakemake(
             'solve_network',
             **{
-                'model_file':'val-LC-UNC',
+                'model_file':'val-2Gt-IRP',
                 'regions':'27-supply',
                 'resarea':'redz',
                 'll':'copt',
-                'opts':'Co2L-3H',
+                'opts':'Co2-2190H',
                 'attr':'p_nom'
             }
         )

@@ -1,5 +1,15 @@
 # PyPSA-ZA
 
+This GitHub repository contains the source code and supplementary materials for my Master's thesis, titled "Distributional Impact Analysis of the Carbon Tax in South Africa", submitted to Technical University Berlin. 
+
+Contact: agatha.majcher@tu-berlin.de
+
+Original repository: https://github.com/PyPSA/pypsa-za
+
+
+---
+
+
 [PyPSA](https://pypsa.org/) model of the South African electricity system at the level of ESKOM's supply regions.
 
 ![Visualisation of optimal capacities and costs in the least cost scenario](imgs/network_csir-moderate_redz_E_LC_p_nom_ext.png)

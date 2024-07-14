@@ -690,14 +690,17 @@ def add_co2limit(n):
     n.add("GlobalConstraint", "CO2Limit",
           carrier_attribute="co2_emissions", sense="<=",
           constant=snakemake.config['electricity']['co2limit'])
+    
+# already in prepare_network
+    # def add_emission_prices(n, emission_prices=None, exclude_co2=False):
+    #     if emission_prices is None:
+    #         emission_prices = snakemake.config['costs']['emission_prices']
+    #     if exclude_co2: emission_prices.pop('co2')
+    #     ep = (pd.Series(emission_prices).rename(lambda x: x+'_emissions') * n.carriers).sum(axis=1)
+    #     n.generators['marginal_cost'] += n.generators.carrier.map(ep)
+    #     n.storage_units['marginal_cost'] += n.storage_units.carrier.map(ep)
+    
 
-def add_emission_prices(n, emission_prices=None, exclude_co2=False):
-    if emission_prices is None:
-        emission_prices = snakemake.config['costs']['emission_prices']
-    if exclude_co2: emission_prices.pop('co2')
-    ep = (pd.Series(emission_prices).rename(lambda x: x+'_emissions') * n.carriers).sum(axis=1)
-    n.generators['marginal_cost'] += n.generators.carrier.map(ep)
-    n.storage_units['marginal_cost'] += n.storage_units.carrier.map(ep)
 
 def add_peak_demand_hour_without_variable_feedin(n):
     new_hour = n.snapshots[-1] + pd.Timedelta(hours=1)
