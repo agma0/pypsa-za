@@ -274,7 +274,7 @@ costs:
     #offwind: 0.015
     #PV: 0.01
     #Wind: 0.015
-  USD_to_ZAR: 18.24
+  USD_to_ZAR: 18.24 # not used - 17.673 manually in Jupyter
   EUR_to_ZAR: 17.83
 
   load_shedding: 100000 #R100/kWh
@@ -289,12 +289,12 @@ costs:
     "discount rate": 0.082
 
   emission_prices: # only used with the option Ep (emission prices)
-    # Externality costs from Integrated Energy Plan by the ZA DOE
-    co2: 0.27e+3
-    sox: 7.6e+3
-    nox: 4.5e+3
-    hg: 41484.e-6 # is also part of the excel sheet
-    particulate: 11.3e+3
+    # Externality costs from Integrated Energy Plan by the ZA DOE in R/t
+    co2: 530.19 #0.27e+3
+    sox: 0 #7.6e+3
+    nox: 0 #4.5e+3
+    hg: 0 #41484.e-6 # is also part of the excel sheet
+    particulate: 0 #11.3e+3
 
 tsam_clustering:
   normed: true
@@ -336,8 +336,8 @@ plotting:
 
   costs_max: 1000
 
-  vre_techs: ["onwind","solar", "hydro", "hydro-import"]
-  conv_techs: ["OCGT", "CCGT", "gas", "nuclear", "coal"] #gas added Agatha
+  vre_techs: ["onwind","solar", "CSP", "hydro", "hydro-import"]
+  conv_techs: ["OCGT", "CCGT", "gas", "nuclear", "coal"] #gas CSP added Agatha
   storage_techs: ["hydro", "CAES", "battery", "PHS", "hydro+PHS"]
   store_techs: ["Li ion", "water tanks"]
   load_carriers: ["AC load", "heat load", "Li ion load"]
@@ -388,7 +388,7 @@ plotting:
     "lines": "#70af1d"
     "transmission lines": "#70af1d"
     "AC-AC": "#70af1d"
-    "AC line": "#3C3C3C"
+    "AC line": "lightgray"
     "links": "#8a1caf"
     "HVDC links": "#8a1caf"
     "DC-DC": "#8a1caf"
@@ -399,6 +399,7 @@ plotting:
     OCGT: "OCGT" #"Open-Cycle Gas"
     CCGT: "CCGT" #"Combined-Cycle Gas"
     gas: "Gas" #added Agatha
+    CSP: "CSP" #added
     offwind-ac: "Offshore Wind (AC)"
     offwind-dc: "Offshore Wind (DC)"
     onwind: "Wind"

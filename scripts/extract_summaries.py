@@ -13,15 +13,15 @@ if 'snakemake' not in globals():
     from vresutils import Dict
     import yaml
     snakemake = Dict()
-    snakemake.input = ['../results/networks/CSIR-Expected-Apr2016_corridors_E',
-                       '../results/networks/IRP2016-Apr2016_corridors_E']
+    snakemake.input = ['../results/networks/solved_val-2Gt-IRP_27-supply_redz_lcopt_Co2L-1H_275oc.nc',
+                       '../results/networks/solved_val-2Gt-IRP_27-supply_redz_lcopt_Co2L-1H-100.nc']
     snakemake.output = ['../results/summaries']
     snakemake.params = Dict(scenario_tmpl="{cost}_{mask}_{sectors}",
                             scenarios=Dict(cost=['CSIR-Expected-Apr2016',
                                                  'IRP2016-Apr2016'],
                                            mask=['corridors'], sectors=['E']))
     with open('../config.yaml') as f:
-        snakemake.config = yaml.load(f)
+        snakemake.config = yaml.safe_load(f)
 
 opts = snakemake.config['plotting']
 

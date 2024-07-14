@@ -159,7 +159,7 @@ rule solve_network:
      script: "scripts/solve_network.py"
 
 
-rule plot_network:
+rule plot_network_sa:
     input:
         network='results/networks/solved_{model_file}_{regions}_{resarea}_l{ll}_{opts}.nc',
         model_file="model_file.xlsx",
