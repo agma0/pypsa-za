@@ -201,6 +201,10 @@ def add_emission_prices(n, emission_prices={"co2": 0.0}, exclude_co2=False):
     su_ep = n.storage_units.carrier.map(ep) / n.storage_units.efficiency_dispatch
     n.storage_units["marginal_cost"] += su_ep
 
+    # Print marginal costs immediately after application
+    print("Marginal costs after applying emission prices:")
+    print(n.generators[["carrier", "marginal_cost"]].groupby("carrier").mean())
+
 
 
 def set_line_s_max_pu(n):
