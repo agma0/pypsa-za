@@ -537,10 +537,8 @@ def add_emission_prices(n, emission_prices=None):
 
     return ep  # Ensure that `ep` is returned and is not None
 
-#####
-
-
-
+#######################
+##### OLD CONSTRAINT TO ADD ONE TIME INVESTMENT BASED ON MANUALLY DEFINED INVESMENT AMOUNT
 
 # Define max additional investment in ZAR - CO2 tax revenue 2030 with 30US$
 
@@ -553,35 +551,6 @@ carbon_investment = 556.377e9 #+base capcost*lifetime = invest
 rebase_investment = 606.355e9  # from base model capital costs of renewables 34309.7e6 USD * 17.673ZAR/USD = 606355.33e6
 total_investment = carbon_investment + rebase_investment
 
-# ### new constraint - total investment of carbon tax revenues in 2030 into renewables
-# def add_carbontax_constraints(n, year=2030):
-#     invest_dict = {'onwind': 12708, 'solar': 8619} #, 'CSP': 0, 'biomass': 20232.73107, 'hydro': 2000, 'PHS': 2000} # ZAR/kWel
-#     renewable_carriers = ['onwind', 'solar'] #, 'CSP', 'biomass', 'hydro']
-
-#     add_generators = n.generators[(n.generators['carrier'].isin(renewable_carriers))
-#                                   & (n.generators.build_year==year)]
-#     #add_storage_units = n.storage_units[(n.storage_units['carrier'] == 'PHS')
-#     #                                    & (n.storage_units.build_year==year)]
-    
-#     # Safely assign investment_cost using .loc
-#     add_generators.loc[:, 'investment_cost'] = add_generators['carrier'].map(invest_dict) * 1000  # ZAR/MW
-
-#     #add_generators['investment_cost'] = add_generators['carrier'].map(invest_dict) *1000 #ZAR/MW
-#     #add_storage_units['investment_cost'] = add_storage_units['carrier'].map(invest_dict) *1000
-
-#     #and add_storage_units.empty 
-#     if add_generators.empty or ('Generator', 'p_nom') not in n.variables.index:
-#         return
-
-#     generators_p_nom = get_var(n, "Generator", "p_nom")
-#     #stores_p_nom = get_var(n, "StorageUnit", "p_nom")
-
-#     lhs = linexpr((add_generators['investment_cost'], generators_p_nom[add_generators.index])).sum()
-#     #lhs += linexpr((add_storage_units['investment_cost'],stores_p_nom[add_storage_units.index])).sum()
-
-#     define_constraints(n, lhs, ">=", total_investment, 'Generator-Storage', 'additional_carbontax_investment')
-
-#     print("\033[91mReinvestment in Renewable Energies!\033[0m")
 
 def add_carbontax_constraints(n, year=2030, total_investment=1e6):  # Example total investment
     invest_dict = {'onwind': 12708, 'solar': 8619}  # ZAR/kWel for onshore wind and solar
@@ -612,9 +581,11 @@ def add_carbontax_constraints(n, year=2030, total_investment=1e6):  # Example to
 
     print("\033[91mReinvestment in Renewable Energies successfully applied!\033[0m")
 
+###########################
 
-######### Everything for reinvestment loop
-    
+######### New code for one time investment and reinvestment loop
+
+# 1. Calculate total emissions and carbon taxes
 def calculate_and_print_emissions_and_taxes(n, iteration, ep=None):
     
     # Only apply emission prices during the first iteration
@@ -640,42 +611,7 @@ def calculate_and_print_emissions_and_taxes(n, iteration, ep=None):
     return total_emissions_mt, carbon_taxes_mzar, ep
 
 
-# def apply_reinvestment_to_renewables(n, reinvestment_amount):
-#     invest_dict = {'onwind': 12708, 'solar': 8619}  # ZAR/kWel for onshore wind and solar
-#     renewable_carriers = ['onwind', 'solar']
-    
-#     # Retrieve the renewable generators that are extendable
-#     add_generators = n.generators[(n.generators['carrier'].isin(renewable_carriers)) & 
-#                                   (n.generators['p_nom_extendable'])]
-    
-#     # Skip if there are no extendable renewable generators
-#     if add_generators.empty:
-#         print("No extendable renewable generators found.")
-#         return
-    
-#     # Safely map the investment costs based on carrier type directly in the original DataFrame
-#     n.generators.loc[add_generators.index, 'investment_cost'] = add_generators['carrier'].map(invest_dict) * 1000  # ZAR/MW
-    
-#     # Distribute total investment proportionally to the generators
-#     total_generators = len(add_generators)
-    
-#     if total_generators == 0:
-#         print("No valid renewable generators found.")
-#         return
-    
-#     # Loop through the renewable generators and apply the reinvestment
-#     for idx, gen in add_generators.iterrows():
-#         # Calculate new capacity proportionally based on investment cost
-#         additional_capacity = reinvestment_amount / total_generators / gen['investment_cost']
-        
-#         # Apply the additional capacity directly to the original DataFrame
-#         n.generators.at[idx, 'p_nom'] += additional_capacity
-    
-#     print(f"Reinvestment of {reinvestment_amount} ZAR applied to renewable generators.")
-
-
-
-
+# 2. Apply reinvestment to renewables
 def apply_reinvestment_to_renewables(n, reinvestment_amount):
 
     invest_dict = {'onwind': 12708, 'solar': 8619}  # ZAR/kWel for onshore wind and solar
@@ -700,8 +636,42 @@ def apply_reinvestment_to_renewables(n, reinvestment_amount):
     
     print(f"Reinvestment of {total_investment} ZAR applied to renewable generators.")
 
-#####
 
+# # 2. Apply reinvestment to renewables - TEST with lhs
+# def apply_reinvestment_to_renewables(n, reinvestment_amount):
+
+#     invest_dict = {'onwind': 12708, 'solar': 8619}  # ZAR/kWel for onshore wind and solar
+#     renewable_carriers = ['onwind', 'solar']
+    
+#     # Retrieve generators to which the reinvestment will be applied
+#     add_generators = n.generators[(n.generators['carrier'].isin(renewable_carriers)) & (n.generators.p_nom_extendable)]
+    
+#     # Skip if there are no extendable renewable generators
+#     if add_generators.empty:
+#         print("No extendable renewable generators found.")
+#         return
+    
+#     # Map the investment costs based on carrier type
+#     add_generators['investment_cost'] = add_generators['carrier'].map(invest_dict) * 1000  # ZAR/MW
+
+#     # Create the lhs expression for the reinvestment constraint
+#     generators_p_nom = get_var(n, "Generator", "p_nom")
+#     lhs = linexpr((add_generators['investment_cost'], generators_p_nom[add_generators.index])).sum()
+
+#     # Define a constraint that enforces the reinvestment
+#     define_constraints(n, lhs, ">=", reinvestment_amount, 'Generator-Storage', 'additional_carbontax_investment')
+
+#     # Distribute total investment proportionally to the generators
+#     for idx, gen in add_generators.iterrows():
+#         # Calculate new capacity proportionally based on investment cost
+#         additional_capacity = reinvestment_amount / len(add_generators) / gen['investment_cost']
+#         n.generators.at[idx, 'p_nom'] += additional_capacity
+    
+#     print(f"Reinvestment of {reinvestment_amount} ZAR applied to renewable generators.")
+
+
+
+# 3. Define one-time investment function - Uncomment in main line 850
 def one_time_investment(n, base_investment):
     # Calculate emissions and carbon taxes after the first solve
     total_emissions, carbon_taxes_mzar, _ = calculate_and_print_emissions_and_taxes(n, iteration=0)
@@ -719,9 +689,9 @@ def one_time_investment(n, base_investment):
 
     return n
 
-####
 
-
+# 4. Define reinvestment loop function - Uncomment in main line 855 
+#- here only adding re - not finding equilibrium -> fix?
 def reinvestment_loop(n, base_investment, max_iterations=15, convergence_threshold=1e-3):
 
     previous_investment = base_investment
@@ -911,15 +881,17 @@ if __name__ == "__main__":
     # Extract the base investment and emissions after the first solve
     base_investment = (n.generators.p_nom_opt * n.generators.capital_cost).sum()
 
-    #ONE TIME INVESTMENT - UNCOMMENT IF NOT NEEDED
-    # Now run the one time reinvestment after the first normal run
-    print("\033[91mStarting reinvestment loop...\033[0m")
-    n = one_time_investment(n, base_investment=base_investment)
 
-    # #INVESTMENT LOOP - UNCOMMENT IF NOT NEEDED
-    # # Now run the reinvestment loop after the first normal run
+    # #ONE TIME INVESTMENT - UNCOMMENT IF NOT NEEDED
+    # # Now run the one time reinvestment after the first normal run
     # print("\033[91mStarting reinvestment loop...\033[0m")
-    # n = reinvestment_loop(n, base_investment=base_investment)
+    # n = one_time_investment(n, base_investment=base_investment)
+
+
+    #INVESTMENT LOOP - UNCOMMENT IF NOT NEEDED
+    # Now run the reinvestment loop after the first normal run
+    print("\033[91mStarting reinvestment loop...\033[0m")
+    n = reinvestment_loop(n, base_investment=base_investment)
 
     # Solve the network again after reinvestment
     print("\033[91mSolving network after reinvestment...\033[0m")
