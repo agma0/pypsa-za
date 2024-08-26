@@ -709,10 +709,14 @@ def reinvestment_loop(n, base_investment, config, opts, tmpdir, solver_logfile):
     convergence_threshold=1
 
     while iteration < max_iterations:
-        # # Calculate emissions and carbon taxes for this iteration
-        # total_emissions, carbon_taxes_zar, ep = calculate_and_print_emissions_and_taxes(n, iteration,ep)
-        
-#new
+        # Calculate emissions and carbon taxes for this iteration (before reinvestment)
+        total_emissions, carbon_taxes_zar, ep = calculate_and_print_emissions_and_taxes(n, iteration, ep)
+
+        # Calculate the total investment for this iteration
+        total_investment = base_investment + carbon_taxes_zar
+
+        # Apply the investment to renewables before solving the network
+        apply_reinvestment_to_renewables(n, total_investment)
 
         # **Solve the network again after reinvestment**
         print("\033[91mSolving network after reinvestment...\033[0m")
@@ -724,13 +728,9 @@ def reinvestment_loop(n, base_investment, config, opts, tmpdir, solver_logfile):
             solver_logfile=solver_logfile
         )
 
-        # Calculate the total investment for this iteration
-        total_investment = base_investment + carbon_taxes_zar
-
-        # Calculate emissions and carbon taxes for this iteration
-        total_emissions, carbon_taxes_zar, ep = calculate_and_print_emissions_and_taxes(n, iteration,ep)
-        
-#end new
+#unsure if i should use
+        # Update base investment after solving the network
+        #base_investment = total_investment  # Update base_investment with the new total investment
 
         # # Apply the investment to renewables
         # apply_reinvestment_to_renewables(n, total_investment)
@@ -926,20 +926,18 @@ if __name__ == "__main__":
     # n = one_time_investment(n, base_investment=base_investment)
 
 
-    # #INVESTMENT LOOP - UNCOMMENT IF NOT NEEDED
-    # # Now run the reinvestment loop after the first normal run
-    # print("\033[91mStarting reinvestment loop...\033[0m")
-    # n = reinvestment_loop(n, base_investment=base_investment)
+# #INVESTMENT LOOP - UNCOMMENT IF NOT NEEDED
+    print("\033[91mStarting reinvestment loop...\033[0m")
 
-    # # Solve the network again after reinvestment
-    # print("\033[91mSolving network after reinvestment...\033[0m")
-    # n = solve_network(
-    #     n, 
-    #     config=snakemake.config,
-    #     opts=opts,
-    #     solver_dir=tmpdir, 
-    #     solver_logfile=snakemake.log.solver
-    # )
+    n = reinvestment_loop(
+    n, 
+    base_investment=base_investment, 
+    config=snakemake.config, 
+    opts=opts, 
+    tmpdir=tmpdir, 
+    solver_logfile=snakemake.log.solver
+)
+#
 
     # Print the total CO2 emissions
     total_emissions = (n.generators_t.p * n.generators.carrier.map(n.carriers['co2_emissions'])).sum().sum()
