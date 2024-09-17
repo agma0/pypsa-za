@@ -130,7 +130,7 @@ def prepare_network(n, solve_opts):
             build_year=n.investment_periods[0],
             lifetime=100,
             #sign=1e-3,  # Adjust sign to measure p and p_nom in kW instead of MW
-            marginal_cost=1e5, #load_shedding, 
+            marginal_cost=1e5,#load_shedding,
             p_nom=1e6,  # MW
         )
 
@@ -509,139 +509,128 @@ def add_operational_reserve_margin_constraint(n, config):
     define_constraints(n, lhs, ">=", rhs, "Reserve margin")
 
 
+# Define max additional investment in ZAR - CO2 tax revenue 2030 with 30US$
 
-### all added AM #####################################################
+# ZAR 1,4 billion in 2021 with ZAR 122/tCO2e ->1,4e9
+# 8 billion USD 8e9 bis 2030 -> 2030: 3.19 billion US$ - average exchange 2022 - 17.673
+# 56.377 1e9 ZAR
 
-def add_emission_prices(n, emission_prices=None, exclude_co2=False):
-    if emission_prices is None:
-        emission_prices = snakemake.config['costs']['emission_prices']
-    if exclude_co2:
-        emission_prices.pop('co2')
+# carbon_investment = 56.377e9 #+base capcost*lifetime = invest
+# #onwind= 900.61e6 * 20 , solar=651.90e6 * 25  - only solar and wind!!!   CSP=356.46e6, biomass=109.11e6, hydro=0, PHS=230.58e6 -> 
+# rebase_investment = 606.355e9  # from base model capital costs of renewables 34309.7e6 USD * 17.673ZAR/USD = 606355.33e6
+# total_investment = carbon_investment + rebase_investment
+
+# from MA - annualized investment
+def add_carbontax_contraints(n, year=2030):
+    renewable_carriers = ['onwind', 'solar', 'CSP', 'biomass', 'hydro']
+    add_generators = n.generators[(n.generators['carrier'].isin(renewable_carriers))
+                                  & (n.generators.build_year==year)]
+    add_storage_units = n.storage_units[(n.storage_units['carrier'] == 'PHS')
+                                        & (n.storage_units.build_year==year)]
+
+    if add_generators.empty and add_storage_units.empty or ('Generator', 'p_nom') not in n.variables.index:
+        return
+
+    generators_p_nom = get_var(n, "Generator", "p_nom")
+    stores_p_nom = get_var(n, "StorageUnit", "p_nom")
+
+    lhs = linexpr((add_generators['capital_cost'], generators_p_nom[add_generators.index])).sum()
+    lhs += linexpr((add_storage_units['capital_cost'],stores_p_nom[add_storage_units.index])).sum()
+
+    define_constraints(n, lhs, ">=", carbon_investment, 'Generator-Storage', 'additional_carbontax_investment')
+
+#####
+
+### OLD NUMBERS! #
+# ZAR 1,4 billion in 2021 with ZAR 122/tCO2e ->1,4e9
+# 8 billion USD 8e9 bis 2030 -> 2030: 3.19 billion US$ - average exchange - 17.673
+# 56.377 1e9 ZAR
+
+# carbon_investment = 56.377e9 #+base capcost*lifetime = invest
+# #onwind= 900.61e6 * 20 , solar=651.90e6 * 25  - only solar and wind!!!           CSP=356.46e6, biomass=109.11e6, hydro=0, PHS=230.58e6 -> 
+# rebase_investment = 606.355e9  # from base model capital costs of renewables 34309.7e6 USD * 17.673ZAR/USD = 606355.33e6
+# total_investment = carbon_investment + rebase_investment
+
+
+# NEW NUMBERS!
+# base_investment = 27437596162.361057 ZAR (solar and wind) #base_investment_solar_wind = (solar_wind_generators.p_nom_opt * solar_wind_generators.capital_cost).sum()
+# emissions = 158816374.82439235 tCO2
+# carbon_taxes = 84202853768.14459 ZAR (530.19 ZAR/tCO2) #ZAR #4.746billion USD
+# total investment = base_investment + carbon taxes
+#total_investment = 111640449930.50565 
+
+total_investment= 111640449930.50565  #ZAR - 112 billion ZAR, 6.6 billion USD
+
+
+### new constraint - total investment of carbon tax revenues in 2030 into renewables
+def add_carbontax_contraints1(n, year=2030):
+    invest_dict = {'onwind': 12708, 'solar': 8619} #, 'CSP': 0, 'biomass': 20232.73107, 'hydro': 2000, 'PHS': 2000} # ZAR/kWel
+    renewable_carriers = ['onwind', 'solar'] #, 'CSP', 'biomass', 'hydro']
+
+    add_generators = n.generators[(n.generators['carrier'].isin(renewable_carriers))
+                                  & (n.generators.build_year==year)]
+    #add_storage_units = n.storage_units[(n.storage_units['carrier'] == 'PHS')
+    #                                    & (n.storage_units.build_year==year)]
     
-    ep = (pd.Series(emission_prices).rename(lambda x: x+'_emissions') * n.carriers).sum(axis=1)
-    n.generators['marginal_cost'] += n.generators.carrier.map(ep)
-    n.storage_units['marginal_cost'] += n.storage_units.carrier.map(ep)
+    add_generators['investment_cost'] = add_generators['carrier'].map(invest_dict) *1000 #ZAR/MW
+    #add_storage_units['investment_cost'] = add_storage_units['carrier'].map(invest_dict) *1000
 
-    # Add a debug statement to check if marginal costs are updated
-    print("Updated Marginal Costs for Generators:\n", n.generators[['carrier', 'marginal_cost']].head())
-
-
-    return ep 
-
-
-def calculate_and_print_emissions_and_taxes(n, iteration):
-    ep = add_emission_prices(n)
-
-    total_emissions = (n.generators_t.p * n.generators.carrier.map(ep)).sum().sum()
-    total_emissions_mt = total_emissions / 1e6  # Convert to Mt
-    carbon_taxes_mzar = (total_emissions_mt * 560)  # Convert to M USD # CHECK!!!!!
-    carbon_taxes_musd = (total_emissions_mt * 30)  # Convert to M USD
-
-    print(f"Total CO2 emissions: {total_emissions_mt} Mt")
-    print(f"Carbon taxes: {carbon_taxes_mzar} M ZAR")
-    print(f"Carbon taxes: {carbon_taxes_musd} M USD")
-
-    return total_emissions_mt, carbon_taxes_mzar
-
-
-def add_carbontax_constraints(n, year=2030, additional_investment=0, base_investment=0):
-    invest_dict = {'onwind': 12708, 'solar': 8619} # ZAR/kWel
-    renewable_carriers = ['onwind', 'solar']
-
-    add_generators = n.generators[(n.generators['carrier'].isin(renewable_carriers)) & (n.generators.build_year == year)]
-    add_generators['investment_cost'] = add_generators['carrier'].map(invest_dict) * 1000
-
+    #and add_storage_units.empty 
     if add_generators.empty or ('Generator', 'p_nom') not in n.variables.index:
         return
 
     generators_p_nom = get_var(n, "Generator", "p_nom")
+    stores_p_nom = get_var(n, "StorageUnit", "p_nom")
+
     lhs = linexpr((add_generators['investment_cost'], generators_p_nom[add_generators.index])).sum()
-    total_investment = base_investment + additional_investment
+    #lhs += linexpr((add_storage_units['investment_cost'],stores_p_nom[add_storage_units.index])).sum()
 
     define_constraints(n, lhs, ">=", total_investment, 'Generator-Storage', 'additional_carbontax_investment')
 
-def reinvest_carbon_taxes(n, config, opts, base_investment):
-    tolerance = 0.000001  # Lower tolerance for more iterations
-    iteration = 0
-    df_iterations = pd.DataFrame(columns=["iteration", "emissions_mt", "carbon_taxes_musd"])
-
-    # Store the original marginal costs before any iterations
-    original_marginal_costs = n.generators['marginal_cost'].copy()
-
-    previous_carbon_taxes = initial_carbon_taxes
-
-    while True:
-        print(f"Iteration {iteration}: Reinvesting {previous_carbon_taxes} M ZAR in renewable energy.")
-        additional_investment = previous_carbon_taxes
-        print(f"Additional Investment for iteration {iteration}: {additional_investment} M ZAR")
-
-        # Reset the marginal costs to the original values
-        n.generators['marginal_cost'] = original_marginal_costs.copy()
-
-        # Add the carbon taxes for the current iteration
-        emission_prices = snakemake.config['costs']['emission_prices']
-        ep = (pd.Series(emission_prices).rename(lambda x: x+'_emissions') * n.carriers).sum(axis=1)
-        n.generators['marginal_cost'] += n.generators.carrier.map(ep)
-
-        # Solve the network with the updated marginal costs
-        n, emissions, carbon_taxes, _ = solve_network(
-            n, config=config, opts=opts, additional_investment=additional_investment, base_investment=base_investment)
-
-        # Debugging: Check carbon taxes differences
-        print(f"Iteration {iteration}: Carbon Taxes = {carbon_taxes}, Previous Carbon Taxes = {previous_carbon_taxes}")
-
-        df_iterations = df_iterations.append({
-            "iteration": iteration,
-            "emissions_mt": emissions,
-            "carbon_taxes_mzar": carbon_taxes,
-            "previous_carbon_taxes_mzar": previous_carbon_taxes
-        }, ignore_index=True)
-
-        csv_output_iterations = f"results/networks/emissions_taxes_iterations_{iteration}.csv"
-        df_iterations.to_csv(csv_output_iterations, index=False)
-        print(f"Emissions and carbon taxes for each iteration saved to {csv_output_iterations}")
-
-        if abs(carbon_taxes - previous_carbon_taxes) < tolerance:
-            print("Convergence reached.")
-            break
-
-        previous_carbon_taxes = carbon_taxes
-        iteration += 1
-
-    df_iterations.to_csv("results/networks/emissions_taxes_iterations.csv", index=False)
-    print("Final iteration data saved.")
-    return n
 
 ###
-def emission_prices_scenario(n, snapshots):
-    # Add emission prices without reinvestment
-    add_emission_prices(n)
+# How much would we need to invest in 2030 to cover all the future costs of the assets? (over lifetime)
 
-def one_year_reinvestment_scenario(n, snapshots, additional_investment=0, base_investment=0):
-    # Step 1: Add emission prices to update marginal costs
-    ep = add_emission_prices(n)
-    
-    # Step 2: Calculate total emissions and carbon taxes based on updated marginal costs
-    total_emissions = (n.generators_t.p * n.generators.carrier.map(ep)).sum().sum()
-    total_emissions_mt = total_emissions / 1e6  # Convert to megatonnes (Mt)
-    carbon_taxes_mzar = total_emissions_mt * 560  # Replace 560 with the correct value for ZAR/tonne
+# def add_carbontax_contraints2(n, year=2030):
+#     invest_dict = {'onwind': 12708, 'solar': 8619, 'CSP': 0, 'biomass': 20232.73107, 'hydro': 2000, 'PHS': 2000} # ZAR/kWh
+#     renewable_carriers = ['onwind', 'solar', 'CSP', 'biomass', 'hydro']
 
-    # Step 3: Apply the calculated carbon taxes as a one-time additional investment in renewables
-    add_carbontax_constraints(n, year=2030, additional_investment=carbon_taxes_mzar, base_investment=base_investment)
+#     add_generators = n.generators[(n.generators['carrier'].isin(renewable_carriers)) & (n.generators.build_year == year)]
+#     add_storage_units = n.storage_units[(n.storage_units['carrier'] == 'PHS') & (n.storage_units.build_year == year)]
 
-    print(f"One-time reinvestment applied: {carbon_taxes_mzar} M ZAR in renewable energy.")
+#     if add_generators.empty and add_storage_units.empty or ('Generator', 'p_nom') not in n.variables.index:
+#         return
 
-def full_reinvestment_loop_scenario(n, config, opts, base_investment):
-    # Perform the full reinvestment loop
-    reinvest_carbon_taxes(n, config, opts, base_investment)
+#     generators_p_nom = get_var(n, "Generator", "p_nom")
+#     stores_p_nom = get_var(n, "StorageUnit", "p_nom")
+#     lhs = linexpr((invest_dict[gen.carrier], generators_p_nom[gen.name]) for gen in add_generators.itertuples()).sum()
+#     lhs += linexpr((invest_dict[su.carrier], stores_p_nom[su.name]) for su in add_storage_units.itertuples()).sum()
+
+#     define_constraints(n, lhs, ">=", total_investment, 'Generator-Storage', 'additional_carbontax_investment')
+
+# def add_carbontax_constraints3(n, year=2030):
+#     invest_dict = {'onwind': 12708, 'solar': 8619, 'CSP': 0, 'biomass': 20232.73107, 'hydro': 2000, 'PHS': 2000}  # ZAR/kWh
+#     renewable_carriers = ['onwind', 'solar', 'CSP', 'biomass', 'hydro']
+
+#     add_generators = n.generators[(n.generators['carrier'].isin(renewable_carriers)) & (n.generators.build_year == year)]
+#     add_storage_units = n.storage_units[(n.storage_units['carrier'] == 'PHS') & (n.storage_units.build_year == year)]
+
+#     if add_generators.empty and add_storage_units.empty or ('Generator', 'p_nom') not in n.variables.index:
+#         return
+
+#     generators_p_nom = get_var(n, "Generator", "p_nom")
+#     storage_p_nom = get_var(n, "StorageUnit", "p_nom")
+
+#     lhs_gen = sum(invest_dict[gen.carrier] * generators_p_nom.at[gen.name] for _, gen in add_generators.iterrows())
+#     lhs_storage = sum(invest_dict[su.carrier] * storage_p_nom.at[su.name] for _, su in add_storage_units.iterrows())
+
+#     lhs = lhs_gen + lhs_storage
+
+#     define_constraints(n, lhs, ">=", total_investment, 'Generator-Storage', 'additional_carbontax_investment')
 
 
 
-
-########################
-
-
-def extra_functionality(n, snapshots, additional_investment=0, base_investment=0):
+def extra_functionality(n, snapshots):
     """
     Collects supplementary constraints which will be passed to ``pypsa.linopf.network_lopf``.
     If you want to enforce additional custom constraints, this is a good location to add them.
@@ -664,19 +653,11 @@ def extra_functionality(n, snapshots, additional_investment=0, base_investment=0
     min_capacity_factor(n,snapshots)
     define_storage_global_constraints(n, snapshots)
     reserves(n,snapshots)
-    # added AM constraints
-    ##add_carbontax_contraints1(n)
-    ##add_carbon_taxes(n)
-    #
-    #add_carbontax_constraints(n, year=2030, additional_investment=additional_investment,base_investment=base_investment)
-    #add_emission_prices(n)
-    ##
-    emission_prices_scenario(n, snapshots)
-    #one_year_reinvestment_scenario(n, snapshots, additional_investment=additional_investment, base_investment=base_investment)
-    #full_reinvestment_loop_scenario(n, config, opts, base_investment)
+    add_carbontax_contraints1(n)
 
 
-def solve_network(n, config, opts="",additional_investment=0, base_investment=0, iteration=0, **kwargs):
+
+def solve_network(n, config, opts="", **kwargs):
     solver_options = config["solving"]["solver"].copy()
     solver_name = solver_options.pop("name")
     cf_solving = config["solving"]["options"]
@@ -690,24 +671,12 @@ def solve_network(n, config, opts="",additional_investment=0, base_investment=0,
     #  only consider investments until 2030
     # wished_sn = n.snapshots[n.snapshots.get_level_values(0)<=2030]
     # n.set_snapshots(wished_sn)
-
-    # Manage the GlobalConstraint - added AM - doubled GC through looping
-    constraint_name = "CO2Limit2030"
-    if constraint_name in n.global_constraints.index:
-        n.global_constraints.drop(constraint_name, inplace=True)
     n.add("GlobalConstraint",
-          constraint_name,
+          "CO2Limit2030",
           carrier_attribute="co2_emissions",
           sense="<=",
           investment_period=2030,
           constant=275e6) #max CO2 2030 100e6, IRP 2030 275e6
-
-    # n.add("GlobalConstraint",
-    #       "CO2Limit2030",
-    #       carrier_attribute="co2_emissions",
-    #       sense="<=",
-    #       investment_period=2030,
-    #       constant=275e6) #max CO2 2030 96e6, IRP 2030 275e6
 
 
     # add to network for extra_functionality
@@ -736,28 +705,7 @@ def solve_network(n, config, opts="",additional_investment=0, base_investment=0,
             **kwargs
         )
 
-    # Calculate and print emissions and carbon taxes after solving the network - Agatha
-    #calculate_and_print_emissions_and_taxes(n)
-
-    # Calculate and print emissions and carbon taxes after solving the network - added AM
-    emissions, carbon_taxes = calculate_and_print_emissions_and_taxes(n, iteration)
-
-    # Calculate the base investment - added AM
-    if base_investment == 0:
-        base_investment = (n.generators.p_nom_opt * n.generators.capital_cost).sum()
-
-    # Set initial carbon taxes for use in the loop, if needed
-    #initial_carbon_taxes = carbon_taxes
-
-    # Run the reinvestment loop with the calculated base investment - ONLY CHECKING ONE TIME INVESTMENT
-    #n = reinvest_carbon_taxes(n, snakemake.config, opts, base_investment)
-
-    # return carbon_taxes for one year / return initial_carbon_taxes for loop
-    return n, emissions, carbon_taxes, base_investment #, initial_carbon_taxes   # added AM
-
-    #return n
-
-
+    return n
 
 #%%
 if __name__ == "__main__":
@@ -796,42 +744,14 @@ if __name__ == "__main__":
             ] = snakemake.config["augmented_line_connection"].get("min_expansion")
         n = prepare_network(n, solve_opts)
 
-# NORMAL RUN - COMMENT REINVESTMENT RUN
-        # n = solve_network(
-        #     n,
-        #     config=snakemake.config,
-        #     opts=opts,
-        #     solver_dir=tmpdir,
-        #     solver_logfile=snakemake.log.solver,
-        #     #keep_references=True, #only for debugging when needed
-        # )
-#
-
-    # Emission prices run!
-        n, emissions, carbon_taxes, base_investment = solve_network(
+        n = solve_network(
             n,
             config=snakemake.config,
             opts=opts,
             solver_dir=tmpdir,
             solver_logfile=snakemake.log.solver,
+            #keep_references=True, #only for debugging when needed
         )
-
-# # REINVESTMENT RUN - COMMENT NORMAL RUN
-#         # add base investment and pass to reinvest_carbon_taxes - added AM
-#         n, emissions, carbon_taxes, base_investment = solve_network(
-#             n,
-#             config=snakemake.config,
-#             opts=opts,
-#             solver_dir=tmpdir,
-#             solver_logfile=snakemake.log.solver,
-#         )
-
-#         # Apply one-year reinvestment scenario
-#         one_year_reinvestment_scenario(n, n.snapshots, additional_investment=carbon_taxes, base_investment=base_investment)
-
-        # Run the reinvestment loop with the calculated base investment
-        #n = reinvest_carbon_taxes(n, snakemake.config, opts, base_investment)
-#
 
         n.export_to_netcdf(snakemake.output[0])
     logger.info("Maximum memory usage: {}".format(mem.mem_usage))

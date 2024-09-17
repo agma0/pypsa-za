@@ -291,7 +291,7 @@ costs:
 
   emission_prices: # only used with the option Ep (emission prices)
     # Externality costs from Integrated Energy Plan by the ZA DOE in R/t
-    co2: 1500 #530.19 #0.27e+3
+    co2: 530.19 #530.19 #0.27e+3
     sox: 0 #7.6e+3
     nox: 0 #4.5e+3
     hg: 0 #41484.e-6 # is also part of the excel sheet
